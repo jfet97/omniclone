@@ -117,7 +117,7 @@ function deepCopy(obj = {}, {
                 /*
                   const duplicatedObj = {};
 
-                  const obj = {
+                  const sourcej = {
                     a: duplicatedObj
                     b: duplicatedObj
                   }
