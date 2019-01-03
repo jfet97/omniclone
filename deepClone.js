@@ -110,6 +110,13 @@ function deepCopy(obj = {}, {
                 Object.defineProperty(res, prop, descriptor);
                 return;
             }
+            
+            // Date objects are cloned mantaining the same Date
+            if(value.constructor == Date) {
+              descriptor.value = new Date(descriptor.value.getTime());
+              Object.defineProperty(res, prop, descriptor);
+              return
+            }
 
             if (value && typeof value == 'object') {
 
