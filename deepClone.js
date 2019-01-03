@@ -121,7 +121,6 @@ function deepCopy(obj = {}, {
                     b: duplicatedObj
                   }
                 */
-
                 if (objectReferences.has(value)) {
                     res[prop] = objectReferences.get(value);
                     return;
