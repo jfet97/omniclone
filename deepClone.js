@@ -39,6 +39,9 @@ function deepClone(obj = {}, {
     }
 
     // circular references guard
+    // each analized object will store its reference here
+    // so we can check each of its object properties to see if there are
+    // reference to already analized objects
     const references = new WeakMap;
 
     return (function realDeepCopy(source, {
