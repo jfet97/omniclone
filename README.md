@@ -30,7 +30,7 @@ const res = deepClone(source, {
   invokeConstructors: true
 });
 ```
-This option will correctly set up the new object, because __constructors are invoked to create it__. The resulting object and each of its object property therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, corresponding to the source object and its object properties.
+This option will correctly set up the new object, because __constructors are invoked to create it__. The resulting object and each of its object property therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, corresponding to the source object and its object properties for everyone.
 
 ```js
 class Test {
