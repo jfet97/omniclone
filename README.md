@@ -47,6 +47,7 @@ const res = deepClone(t, {
   invokeConstructors: true
 }); // 'constructor invoked' 'constructor invoked'
 
+res; // Test { t: Test {} }
 res instanceof Test; // true
 res.foo instanceof Test; // true
 ```
@@ -87,6 +88,7 @@ const res = deepClone(t, {
   setPrototype: true
 });
 
+res; // Test { t: Test {} }
 res instanceof Test; // true
 res.foo instanceof Test; // true
 ```
