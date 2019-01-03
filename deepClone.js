@@ -84,7 +84,7 @@ function deepClone(obj = {}, {
         // if an object contains another object more than one times
         // storing its reference in more than one prop
         // we have to restore this state
-        const objectReferences = new WeakMap;
+        const safeReferences = new WeakMap;
 
         // deep copy each prop from the source object to the res object
         Object.entries(ownPropsDcps).forEach(([prop, descriptor]) => {
@@ -143,8 +143,8 @@ function deepClone(obj = {}, {
                     b: duplicatedObj
                   }
                 */
-                if (objectReferences.has(value)) {
-                    res[prop] = objectReferences.get(value);
+                if (safeReferences.has(value)) {
+                    res[prop] = safeReferences.get(value);
                     return;
                 }
 
@@ -156,7 +156,7 @@ function deepClone(obj = {}, {
                 });
 
                 // set the object reference to avoid sibiling duplicates
-                objectReferences.set(value, res[prop]);
+                safeReferences.set(value, res[prop]);
             } else {
                 // shallow copy for others props
                 Object.defineProperty(res, prop, descriptor);
