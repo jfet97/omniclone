@@ -37,7 +37,7 @@ If the `invokeConstructor` flag is setted to `false`, a plain new object will be
 Unless you use the `setPrototype` flag.
 
 ### setPrototype (default false)
-If the `invokeConstructor` flag is setted to `false` we could anyway share the `[[Prototype]]` object between the source object and the resulting object thanks to the `setPrototype` flag, __without calling the constructors__.\ This means that the `constructor` prop will be shared as well because it is related to the `[[Prototype]]` prop.\ This flag affects all the object properties as weel, like the previous flag.\ 
+If the `invokeConstructor` flag is setted to `false` we could anyway share the `[[Prototype]]` object between the source object and the resulting object thanks to the `setPrototype` flag, __without calling the constructors__.\This means that the `constructor` prop will be shared as well because it is related to the `[[Prototype]]` prop.\This flag affects all the object properties as weel, like the previous flag.\ 
 If the `invokeConstructor` flag is setted to `true`, the `setPrototype` flag will be is ignored.
 
 ```js
