@@ -1,4 +1,4 @@
-function deepCopy(obj = {}, {
+function deepClone(obj = {}, {
     setPrototype = false,
     invokeConstructors = true,
     copyNonEnumerables = false,
