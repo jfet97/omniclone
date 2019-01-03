@@ -74,3 +74,15 @@ const res = deepClone(source, {
   copyGettersSetters: true
 });
 ```
+
+## default config
+The default config is the following:
+```js
+deepClone(source, {
+    invokeConstructors = true,
+    setPrototype = false,
+    copyNonEnumerables = false,
+    copySymbols = false,
+    copyGettersSetters = false,
+});
+```
