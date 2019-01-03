@@ -74,7 +74,7 @@ function deepCopy(obj = {}, {
             }
         }
 
-
+        // sibiling safe references
         const objectReferences = new WeakMap;
 
         // deep copy each prop from the source object to the res object
