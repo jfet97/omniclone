@@ -107,7 +107,7 @@ Enable it to deep copy also symbol properties.\
 Disable it to ignore them.
 ```js
 const res = deepClone(source, {
-  copySymbol: true
+  copySymbols: true
 });
 ```
 
