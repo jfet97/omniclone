@@ -64,6 +64,7 @@ If the `invokeConstructor` flag is setted to `true`, the `setPrototype` flag wil
 
 ```js
 const res = deepClone(source, {
+  invokeConstructor: false,
   setPrototype: true
 });
 ```
@@ -82,6 +83,7 @@ t.foo = new Test(); // 'constructor invoked'
 t; // Test { t: Test {} }
 
 const res = deepClone(t, {
+  invokeConstructor: false,
   setPrototype: true
 });
 
