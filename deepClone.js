@@ -108,27 +108,8 @@ function deepClone(obj = {}, {
             // if we mustn't copy g||s and the current prop has g||s we return
             if (!copyGettersSetters && (descriptor.get || descriptor.set)) return;
 
-            // The Boolean, Number, and String objects are converted
-            // to the corresponding primitive values
-            if (
-                value.constructor == String ||
-                value.constructor == Number ||
-                value.constructor == Boolean
-            ) {
-                descriptor.value = descriptor.value.valueOf();
-                Object.defineProperty(res, prop, descriptor);
-                return;
-            }
-            
-            // Date objects are cloned mantaining the same Date
-            if(value.constructor == Date) {
-              descriptor.value = new Date(descriptor.value.getTime());
-              Object.defineProperty(res, prop, descriptor);
-              return
-            }
-
             if (value && typeof value == 'object') {
-                 
+
                 // PRIOR check for circular references - 
                 if (references.has(value)) {
                     throw new TypeError('TypeError: circular reference found');
@@ -146,6 +127,25 @@ function deepClone(obj = {}, {
                 if (safeReferences.has(value)) {
                     res[prop] = safeReferences.get(value);
                     return;
+                }
+
+                // The Boolean, Number, and String objects are converted
+                // to the corresponding primitive values
+                if (
+                    value.constructor == String ||
+                    value.constructor == Number ||
+                    value.constructor == Boolean
+                ) {
+                    descriptor.value = descriptor.value.valueOf();
+                    Object.defineProperty(res, prop, descriptor);
+                    return;
+                }
+
+                // Date objects are cloned mantaining the same Date
+                if (value.constructor == Date) {
+                    descriptor.value = new Date(descriptor.value.getTime());
+                    Object.defineProperty(res, prop, descriptor);
+                    return
                 }
 
 
