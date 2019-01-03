@@ -50,7 +50,7 @@ function deepClone(obj = {}, {
         copyNonEnumerables,
         copySymbols,
         copyGettersSetters,
-    }) {
+    }, references) {
 
         // set a reference for the current obj into the guard
         // the value stored does not matter
@@ -165,10 +165,9 @@ function deepClone(obj = {}, {
                 // shallow copy for others props
                 Object.defineProperty(res, prop, descriptor);
             }
-
         });
 
         return res;
 
-    })(obj, config);
+    })(obj, config, references);
 }
