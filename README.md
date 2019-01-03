@@ -86,3 +86,23 @@ deepClone(source, {
     copyGettersSetters = false,
 });
 ```
+
+
+## what about the 6th strength?
+
+To understand it, let's compare the function `deepClone` with the well-know `JSON.parse(JSON.stringify(source))`:
+```js
+const obj = { foo: 'bar'};
+const source = {
+  a: obj,
+  b: obj,
+};
+
+JSON.stringify(source); // '{"a":{"foo":"bar"},"b":{"foo":"bar"}}'
+```
+When you will use `JSON.parse()`, an `{"foo":"bar"}` object will be created for the `a` prop and a `{"foo":"bar"}` distinct object will be created for the `b` prop. But this is not the initial situation where `source.a == source.b; // true`.
+
+
+## warnings
+1. methods are always copied by reference
+2. a method that uses `super` must not be copied
