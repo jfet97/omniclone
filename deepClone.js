@@ -52,6 +52,7 @@ function deepClone(obj = {}, {
         // set a reference for the current obj
         references.set(source, source);
 
+        // result value
         let res = null;
 
         // get all the property descriptors from the source object
