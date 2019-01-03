@@ -30,14 +30,14 @@ const res = deepClone(source, {
   invokeConstructor: true
 });
 ```
-This option will correctly set up the new object, because __the source's constructor is invoked to create it__. The new object and each new object prop therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up.
+This option will correctly set up the new object, because __the source's constructor is invoked to create it__. The resulting object and each its object property therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, corresponding to the source object and its object properties.
 
 It is actually a default enabled setting, but you can disable it.\
-If the `invokeConstructor` flag is setted to `false`, a plain new object will be created for each object prop. So the `constructor` prop will be set to the `Object` function, and the `[[Prototype]]` prop will be `Object.prototype`.\
+If the `invokeConstructor` flag is setted to `false`, a plain new object will be created for each object prop and for the resulting object as well. So the `constructor` prop will be set to the `Object` function, and the `[[Prototype]]` prop will be `Object.prototype`.\
 Unless you use the `setPrototype` flag.
 
 ### setPrototype (default false)
-If the `invokeConstructor` flag is setted to `false` we could anyway share the `[[Prototype]]` object between each source object prop and each resulting object prop - this means that the `constructor` prop will be shared as well - thanks to the `setPrototype` flag, __without calling the constructors__.
+If the `invokeConstructor` flag is setted to `false` we could anyway share the `[[Prototype]]` object between the source object and the resulting object thanks to the `setPrototype` flag, __without calling the constructors__.\ This means that the `constructor` prop will be shared as well because it is related to the `[[Prototype]]` prop.\ This flag affects all the object properties as weel, like the previous flag.\ 
 If the `invokeConstructor` flag is setted to `true`, the `setPrototype` flag will be is ignored.
 
 ```js
@@ -46,7 +46,7 @@ const res = deepClone(source, {
 });
 ```
 
-The new object therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, but the constructor is not invoked.
+The resulting object therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, but the constructor is not invoked.
 
 ### copyNonEnumerables (default false)
 Enable it to deep copy also non enumerables properties.\
