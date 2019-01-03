@@ -1,7 +1,7 @@
 # deepClone
 A customizable javascript deepClone function for object cloning that is fool proof
 ```
-function deepClone(source, config);
+deepClone(source, config);
 ```
 
 Example:
