@@ -52,7 +52,7 @@ function deepClone(obj = {}, {
         copyGettersSetters,
     }) {
 
-        // set a reference for the current obj
+        // set a reference for the current obj into the guard
         references.set(source, source);
 
         // result value
@@ -151,7 +151,7 @@ function deepClone(obj = {}, {
                     invokeConstructors
                 });
 
-                // set the object reference to avoid duplicates
+                // set the object reference to avoid sibiling duplicates
                 objectReferences.set(value, res[prop]);
             } else {
                 // shallow copy for others props
