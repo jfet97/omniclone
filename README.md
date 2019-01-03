@@ -70,7 +70,7 @@ const res = deepClone(source, {
 });
 ```
 
-The resulting object therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, but the constructor are not invoked.
+The resulting object therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, but the constructors are not invoked.
 
 ```js
 class Test {
