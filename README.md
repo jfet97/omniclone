@@ -20,7 +20,7 @@ obj == obj2; // false
 4. handle String, Boolean, Number and Date objects in the right way:  String, Boolean, and Number objects are unwrapped - Date objects are exactly copied
 5. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
 6. safe similar sibilings references are not duplicated
-7. implicit support for RegExp objects and Arrays if the `invokeConstructors` is setted
+7. implicit support for RegExp objects and also for Array objects (if the `invokeConstructors` is setted)
 
 ## config
 
