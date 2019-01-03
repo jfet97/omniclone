@@ -67,6 +67,8 @@ function deepCopy(obj = {}, {
             // if not, we have to choose what to do with the [[Prototype]] prop
             // setPrototype flag indicates if we have to set up the same [[Prototype]] prop
             // as the source object or not
+            // the constructor property will be setted like in the previous case
+            // but without invoking the constructor
             if (setPrototype) {
                 res = Object.create(Object.getPrototypeOf(source));
             } else {
