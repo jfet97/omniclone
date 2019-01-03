@@ -145,17 +145,18 @@ function deepClone(obj = {}, {
                 if (value.constructor == Date) {
                     descriptor.value = new Date(descriptor.value.getTime());
                     Object.defineProperty(res, prop, descriptor);
-                    return
+                    return;
                 }
 
 
-                // recursive deep copy if the descriptor.value is an object
+                // recursive deep copy for the others object
                 res[prop] = realDeepCopy(value, {
                     setPrototype,
                     invokeConstructors
                 });
 
                 // set the object reference to avoid sibiling duplicates
+                // value == reference to the current object / res[prop] == reference to the resulting copied object
                 safeReferences.set(value, res[prop]);
             } else {
                 // shallow copy for others props
