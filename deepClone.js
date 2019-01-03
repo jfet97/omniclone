@@ -138,7 +138,6 @@ function deepClone(obj = {}, {
                 }
 
                 // check for circular references
-                // self reference
                 if (references.has(value)) {
                     throw new TypeError('TypeError: circular reference found');
                 }
