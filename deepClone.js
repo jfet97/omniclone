@@ -38,6 +38,7 @@ function deepCopy(obj = {}, {
         throw new TypeError(`TypeError: invalid 'copyGettersSetters' flag's type`);
     }
 
+    // circular references guard
     const references = new WeakMap;
 
     return (function realDeepCopy(source, {
