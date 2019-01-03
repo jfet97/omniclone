@@ -81,6 +81,9 @@ function deepClone(obj = {}, {
         }
 
         // sibiling safe references
+        // if an object contains another object more than one times
+        // storing its reference in more than one prop
+        // we have to restore this state
         const objectReferences = new WeakMap;
 
         // deep copy each prop from the source object to the res object
@@ -125,8 +128,13 @@ function deepClone(obj = {}, {
             }
 
             if (value && typeof value == 'object') {
+                 
+                // PRIOR check for circular references - 
+                if (references.has(value)) {
+                    throw new TypeError('TypeError: circular reference found');
+                }
 
-                // check for duplicated object references
+                // check for duplicated sibiling object references
                 /*
                   const duplicatedObj = {};
 
@@ -140,10 +148,6 @@ function deepClone(obj = {}, {
                     return;
                 }
 
-                // check for circular references
-                if (references.has(value)) {
-                    throw new TypeError('TypeError: circular reference found');
-                }
 
                 // recursive deep copy if the descriptor.value is an object
                 res[prop] = realDeepCopy(value, {
