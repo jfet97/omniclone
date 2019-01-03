@@ -85,6 +85,7 @@ function deepClone(obj = {}, {
         // storing its reference in more than one prop
         // we have to restore this state
         const safeReferences = new WeakMap;
+        // obviously if the reference implies circular reference an error is thrown
 
         // deep copy each prop from the source object to the res object
         Object.entries(ownPropsDcps).forEach(([prop, descriptor]) => {
