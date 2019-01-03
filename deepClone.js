@@ -53,6 +53,8 @@ function deepClone(obj = {}, {
     }) {
 
         // set a reference for the current obj into the guard
+        // the value stored does not matter
+        // is the reference the fulcrum of the control
         references.set(source, source);
 
         // result value
@@ -150,7 +152,7 @@ function deepClone(obj = {}, {
                 }
 
 
-                // recursive deep copy for the others object
+                // recursive deep copy for the others object props
                 res[prop] = realDeepCopy(value, {
                     setPrototype,
                     invokeConstructors
