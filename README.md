@@ -111,7 +111,7 @@ const res = deepClone(source, {
 });
 ```
 
-### copyGettersSetters
+### copyGettersSetters (default false)
 Enable it to copy also getters and setters.\
 Disable it to ignore them.
 ```js
