@@ -32,9 +32,29 @@ const res = deepClone(source, {
 ```
 This option will correctly set up the new object, because __the source's constructor is invoked to create it__. The resulting object and each of its object property therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, corresponding to the source object and its object properties.
 
+```js
+class Test {
+  constructor() {
+    console.log('constructor invoked');
+  }
+};
+
+const t = new Test(); // 'constructor invoked'
+t.foo = new Test(); // 'constructor invoked'
+t; // Test { t: Test {} }
+
+const res = deepClone(t, {
+  invokeConstructor: true
+}); // 'constructor invoked' 'constructor invoked'
+
+res instanceof Test; // true
+res.foo instanceof Test; // true
+```
+
 It is actually a default enabled setting, but you can disable it.\
 If the `invokeConstructor` flag is setted to `false`, a plain new object will be created for each object prop and for the resulting object as well. So the `constructor` prop will be set to the `Object` function, and the `[[Prototype]]` prop will be `Object.prototype`.\
 Unless you use the `setPrototype` flag.
+
 
 ### setPrototype (default false)
 If the `invokeConstructor` flag is setted to `false` we could anyway share the `[[Prototype]]` object between the source object and the resulting object thanks to the `setPrototype` flag, __without calling the constructors__.\
@@ -48,7 +68,7 @@ const res = deepClone(source, {
 });
 ```
 
-The resulting object therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, but the constructor is not invoked.
+The resulting object therefore will have the `[[Prototype]]` and the `constructor` props correctly setted up, but the constructor are not invoked.
 
 ### copyNonEnumerables (default false)
 Enable it to deep copy also non enumerables properties.\
