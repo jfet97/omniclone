@@ -155,8 +155,11 @@ function deepClone(obj = {}, {
                 // recursive deep copy for the others object props
                 res[prop] = realDeepCopy(value, {
                     setPrototype,
-                    invokeConstructors
-                });
+                    invokeConstructors,
+                    copyNonEnumerables,
+                    copySymbols,
+                    copyGettersSetters,
+                }, references);
 
                 // set the object reference to avoid sibiling duplicates
                 // value == reference to the current object / res[prop] == reference to the resulting copied object
