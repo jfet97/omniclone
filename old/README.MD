@@ -1,2 +1,2 @@
-RegExp not supported
+RegExp not supported -
 AllowCircularReferences not supported
