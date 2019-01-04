@@ -1,5 +1,3 @@
-// this version allow circular References
-
 function deepClone(obj = {}, {
     setPrototype = false,
     invokeConstructors = true,
@@ -51,6 +49,9 @@ function deepClone(obj = {}, {
     // reference to already analized objects
     const references = new WeakMap;
 
+    // A reference to the parent object
+    const start = obj;
+
     return (function realDeepCopy(source, {
         setPrototype,
         invokeConstructors,
@@ -58,7 +59,7 @@ function deepClone(obj = {}, {
         copySymbols,
         copyGettersSetters,
         allowCircularReferences,
-    }, references) {
+    }, references, start) {
 
         // set a reference for the current obj into the guard
         // the value stored does not matter
@@ -127,6 +128,9 @@ function deepClone(obj = {}, {
                     } else {
                       // if circulary references are allowed
                       // the temporary result is exactly the circ referred object
+                      // it could be an 'old' object
+                      // or an already copied object with or without
+                      // some 'old' circ references inside it
                       res[prop] = references.get(value);
                       return;
                     }
@@ -173,7 +177,7 @@ function deepClone(obj = {}, {
                     copySymbols,
                     copyGettersSetters,
                     allowCircularReferences,
-                }, references);
+                }, references, start);
 
                 // set the object reference to avoid sibiling duplicates
                 // value == reference to the current object / res[prop] == reference to the resulting copied object
@@ -184,26 +188,47 @@ function deepClone(obj = {}, {
             }
         });
 
-        // circular references update from temp values
-        if(allowCircularReferences) {
-          (function updateReferences(source, res, references) {
-            // now the object is completed, I can update the references guard Map
-            // but the object still has old circular references as values  
-            references.set(source, res);
-          
-            // but I can update values because nested objects already have
-            // completed the previous step updating the references guard Map
-            Object.entries(res).forEach(([key, value]) => {
-              if(references.has(value)) {
-                res[key] = references.get(value);
 
-              }
+
+        // circular references update from temp old values to new ones
+        if(allowCircularReferences) {
+
+          // each time an object is completed I update the references map
+          // with its references. the object could still have some old circ ref
+          // but I'll handle this later
+          references.set(source, res);
+
+          // if I've recurively handled all 'virtual' child
+          // I've completely updated the references map
+          // Now I have to recursively update all old circ refs to the new one
+          if(start == source) {
+
+            (function updateReferences(res, references) {
+            
+              Object.entries(res).forEach(([key, value]) => {
+                // only if it is an object
+                if(value && typeof value =='object') {
+                  // if the references map has a field corresponding to the current value
+                  // it means that the value is an old circ reference
+                  // but now the map has an up to date corresponding value (a new circ ref)
+                  // so we update the prop
+                  if(references.has(value)) {
+                    res[key] = references.get(value);
+                  } else {
+                    // if not, res[key] it is a new copied object that might
+                    // have some old circ references in it
+                    updateReferences(res[key], references);
+                  }
+                  
+                }
             });
-          })(source, res, references);
+          })(res, references);
+
+          }
         }
 
         // return the result
         return res;
 
-    })(obj, config, references);
+    })(obj, config, references, start);
 }
