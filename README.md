@@ -140,6 +140,7 @@ deepClone(source, {
     copyNonEnumerables = false,
     copySymbols = false,
     copyGettersSetters = false,
+    allowCircularReferences: false,
 });
 ```
 
