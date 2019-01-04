@@ -11,7 +11,7 @@ function deepClone(obj = {}, {
         throw new TypeError(`TypeError: invalid 'obj' argument's type`);
     }
 
-    if (object instanceof Error) {
+    if (obj instanceof Error) {
         throw new TypeError(`TypeError: cannot copy Error objects`);
     }
 
