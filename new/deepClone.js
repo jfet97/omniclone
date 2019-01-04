@@ -155,7 +155,7 @@ function deepClone(obj = {}, {
                 }
 
                 // do not copy Error objects
-                if (object instanceof Error) {
+                if (value instanceof Error) {
                     throw new TypeError(`TypeError: cannot copy Error objects`);
                 }
 
