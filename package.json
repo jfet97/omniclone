@@ -1,5 +1,5 @@
 {
-  "name": "deepclone",
+  "name": "omniclone",
   "version": "0.1.0",
   "description": "deepClone function for js objects",
   "main": "dist/main.js",
