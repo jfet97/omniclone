@@ -177,6 +177,12 @@ function deepClone(obj = {}, {
                     res[prop].lastIndex = lastIndex;
                     return;
                 }
+                
+                // Promises are shallow cloned
+                if (value.constructor == Promise) {
+                    Object.defineProperty(res, prop, descriptor);
+                    return;
+                }
 
 
                 // recursive deep copy for the others object props
