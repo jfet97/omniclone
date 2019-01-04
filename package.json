@@ -2,14 +2,19 @@
   "name": "deepclone",
   "version": "0.1.0",
   "description": "deepClone function for js objects",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development src/deepClone.js",
+    "build": "webpack --mode production src/deepClone.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jfet97/deepClone.git"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "javascript",
     "clone",
@@ -32,6 +37,8 @@
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "^3.0.1",
-    "prettier": "^1.15.3"
+    "prettier": "^1.15.3",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.0"
   }
 }
