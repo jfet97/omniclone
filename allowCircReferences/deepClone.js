@@ -168,6 +168,15 @@ function deepClone(obj = {}, {
                     Object.defineProperty(res, prop, descriptor);
                     return;
                 }
+                
+                // RegExp cloning is automatically supported
+                if (value.constructor == RegExp) {
+                    const lastIndex = descriptor.value.lastIndex;
+                    descriptor.value = new RegExp(descriptor.value.source, descriptor.value.flags);
+                    Object.defineProperty(res, prop, descriptor);
+                    res[prop].lastIndex = lastIndex;
+                    return;
+                }
 
 
                 // recursive deep copy for the others object props
@@ -189,8 +198,6 @@ function deepClone(obj = {}, {
             }
         });
  
-         console.log(res);
-
         // circular references update from temp old values to new ones
         if (allowCircularReferences) {
 
