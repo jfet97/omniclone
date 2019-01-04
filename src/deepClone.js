@@ -1,4 +1,4 @@
-export function omniclone(
+export default function omniclone(
   obj = {},
   {
     setPrototype = false,
