@@ -144,13 +144,12 @@ export default function deepClone(
         }
 
         // check for duplicated sibiling object references
-        /*
-                                                                                                                                                                          const duplicatedObj = {};
-                                                                                                                                                                          const sourcej = {
-                                                                                                                                                                            a: duplicatedObj
-                                                                                                                                                                            b: duplicatedObj
-                                                                                                                                                                          }
-                                                                                                                                                                        */
+        // const duplicatedObj = {};
+        // const sourcej = {
+        //      a: duplicatedObj
+        //      b: duplicatedObj
+        // }
+
         if (safeReferences.has(value)) {
           res[prop] = safeReferences.get(value);
           return;
