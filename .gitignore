@@ -77,4 +77,8 @@ typings/
 .fusebox/
 
 # DynamoDB Local files
+<<<<<<< HEAD
 .dynamodb/
+=======
+.dynamodb/
+>>>>>>> e34632c8f535718a3a6a54e8c7a6ee6fab79751f
