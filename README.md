@@ -164,3 +164,4 @@ When you will use `JSON.parse()`, an `{"foo":"bar"}` object will be created for 
 ## warnings
 1. promises and methods are always copied by reference
 2. `super` is statically bound to a class heirarchy, remember it
+3. `Error` objects cannot be copied
