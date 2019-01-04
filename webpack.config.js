@@ -1,5 +1,5 @@
 module.exports = {
     output: {
-        libraryTarget: 'commonjs'
+        libraryTarget: 'commonjs2'
     }
 };

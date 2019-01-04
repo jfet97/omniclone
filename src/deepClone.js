@@ -1,4 +1,4 @@
-export default function deepClone(
+export function omniclone(
   obj = {},
   {
     setPrototype = false,

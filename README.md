@@ -17,6 +17,11 @@ obj == obj2; // false
 $ npm install --save omniclone
 ```
 
+## usage
+```
+$ const { omniclone } = require('omniclone');
+```
+
 ## strengths
 1. automatically invoke object constructors before copying properties (customizable behavior)
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
