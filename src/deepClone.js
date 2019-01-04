@@ -1,4 +1,4 @@
-function deepClone(obj = {}, {
+export default function deepClone(obj = {}, {
     setPrototype = false,
     invokeConstructors = true,
     copyNonEnumerables = false,
