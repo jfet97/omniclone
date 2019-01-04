@@ -1,6 +1,5 @@
 module.exports = {
     output: {
-        library: 'omniclone',
-        libraryTarget: 'commonjs2'
+        libraryTarget: 'commonjs'
     }
 };
