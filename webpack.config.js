@@ -1,5 +1,12 @@
+const path = require('path');
+
 module.exports = {
+    entry: './src/deepClone.js',
     output: {
-        libraryTarget: 'commonjs2'
+        filename: 'main.js',
+        library: 'omnicode',
+        libraryExport: 'default',
+        libraryTarget: 'commonjs2',
+        path: path.resolve(__dirname, 'dist')
     }
 };

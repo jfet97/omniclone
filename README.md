@@ -19,8 +19,8 @@ $ npm install --save omniclone
 
 ## usage
 ```
-const { omniclone } = require('omniclone');
-import { omniclone } from 'omniclone';
+const omniclone = require('omniclone');
+import omniclone from 'omniclone';
 ```
 
 ## strengths
