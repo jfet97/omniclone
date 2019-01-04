@@ -16,7 +16,7 @@ obj == obj2; // false
 ## strengths
 1. automatically invoke object constructors before copying properties (customizable behavior)
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
-3. let you to clone objects with circular references (customizable behavior) - O(1) time complexity
+3. let you to clone objects with circular references (customizable behavior)
 4. handle String, Boolean, Number and Date objects in the right way:  String, Boolean, and Number objects are unwrapped - Date objects are exactly copied
 5. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
 6. safe similar sibilings references are not duplicated
