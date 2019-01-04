@@ -1,16 +1,20 @@
-# deepClone
+# omniclone
 A customizable and fool proof javascript function for object deep cloning
-```
-deepClone(source, config);
+```js
+omniclone(source, config);
 ```
 
 Example:
 ```js
 const obj = { foo: { bar: 'baz' } };
-const obj2 = deepClone(obj);
+const obj2 = omniclone(obj);
 
 obj2; // { foo: { bar: 'baz' } };
 obj == obj2; // false
+```
+## installation
+```
+$ npm install --save omniclone
 ```
 
 ## strengths
@@ -28,7 +32,7 @@ obj == obj2; // false
 ### invokeConstructors (default true)
 If you need to invoke the objects constructors for each object prop set the `invokeConstructors` flag to `true`:
 ```js
-const res = deepClone(source, {
+const res = omniclone(source, {
   invokeConstructors: true
 });
 ```
@@ -45,7 +49,7 @@ const t = new Test(); // 'constructor invoked'
 t.foo = new Test(); // 'constructor invoked'
 t; // Test { t: Test {} }
 
-const res = deepClone(t, {
+const res = omniclone(t, {
   invokeConstructors: true
 }); // 'constructor invoked' 'constructor invoked'
 
@@ -66,7 +70,7 @@ This flag affects all the object properties as weel, like the previous flag.\
 If the `invokeConstructors` flag is setted to `true`, the `setPrototype` flag will be is ignored.
 
 ```js
-const res = deepClone(source, {
+const res = omniclone(source, {
   invokeConstructors: false,
   setPrototype: true
 });
@@ -85,7 +89,7 @@ const t = new Test(); // 'constructor invoked'
 t.foo = new Test(); // 'constructor invoked'
 t; // Test { t: Test {} }
 
-const res = deepClone(t, {
+const res = omniclone(t, {
   invokeConstructors: false,
   setPrototype: true
 });
@@ -99,7 +103,7 @@ res.foo instanceof Test; // true
 Enable it to deep copy also non enumerables properties.\
 Disable it to ignore them.
 ```js
-const res = deepClone(source, {
+const res = omniclone(source, {
   copyNonEnumerables: true
 });
 ```
@@ -109,7 +113,7 @@ Enable it to deep copy also symbol properties.\
 Disable it to ignore them.\
 Symbols are shallow copied;
 ```js
-const res = deepClone(source, {
+const res = omniclone(source, {
   copySymbols: true
 });
 ```
@@ -118,7 +122,7 @@ const res = deepClone(source, {
 Enable it to copy also getters and setters.\
 Disable it to ignore them.
 ```js
-const res = deepClone(source, {
+const res = omniclone(source, {
   copyGettersSetters: true
 });
 ```
@@ -127,7 +131,7 @@ const res = deepClone(source, {
 Enable it to allow circular references.\
 Disable it to throw an error if one is met.
 ```js
-const res = deepClone(source, {
+const res = omniclone(source, {
   allowCircularReferences: true
 });
 ```
@@ -135,7 +139,7 @@ const res = deepClone(source, {
 ## default config
 The default config is the following:
 ```js
-deepClone(source, {
+omniclone(source, {
     invokeConstructors : true,
     setPrototype : false,
     copyNonEnumerables : false,
@@ -148,7 +152,7 @@ deepClone(source, {
 
 ## what about the 6th strength?
 
-To understand it, let's compare the function `deepClone` with the well-know `JSON.parse(JSON.stringify(source))`:
+To understand it, let's compare the function `omniclone` with the well-know `JSON.parse(JSON.stringify(source))`:
 ```js
 const obj = { foo: 'bar'};
 const source = {
