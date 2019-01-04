@@ -62,8 +62,9 @@ function deepClone(obj = {}, {
     }, references, start) {
 
         // set a reference for the current obj into the guard
-        // the value stored does not matter
-        // is the reference the fulcrum of the control
+        // the value stored does not matter if the allowCircularReferences is not enabled
+        // is the reference the fulcrum of the control in this case
+        // otherwise it's essential for the final circ references update
         references.set(source, source);
 
         // result value
@@ -187,8 +188,8 @@ function deepClone(obj = {}, {
                 Object.defineProperty(res, prop, descriptor);
             }
         });
-
-
+ 
+         console.log(res);
 
         // circular references update from temp old values to new ones
         if (allowCircularReferences) {
@@ -202,9 +203,13 @@ function deepClone(obj = {}, {
             // I've completely updated the references map
             // Now I have to recursively update all old circ refs to the new one
             if (start == source) {
-
-                (function updateReferences(res, references) {
-
+               
+                const alreadyVisited = new WeakMap;
+                // we start from res, so it is already visited
+                alreadyVisited.set(res);
+                
+                ;(function updateReferences(res, references) {
+                    
                     Object.entries(res).forEach(([key, value]) => {
                         // only if it is an object
                         if (value && typeof value == 'object') {
@@ -213,11 +218,20 @@ function deepClone(obj = {}, {
                             // but now the map has an up to date corresponding value (a new circ ref)
                             // so we update the prop
                             if (references.has(value)) {
+                                // is essential here that the value was
+                                // the reference to the old object
                                 res[key] = references.get(value);
                             } else {
                                 // if not, res[key] it is a new copied object that might
                                 // have some old circ references in it
-                                updateReferences(res[key], references);
+                                // vut it will be not visited if we have already
+                                // updated it
+                                if(alreadyVisited.has(value)) {
+                                  return;
+                                } else {
+                                  alreadyVisited.set(value);
+                                  updateReferences(value, references);
+                                }
                             }
 
                         }
