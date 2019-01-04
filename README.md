@@ -21,6 +21,7 @@ obj == obj2; // false
 5. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
 6. safe similar sibilings references are not duplicated
 7. correct cloning of Array objects (if the `invokeConstructors` is setted)
+8. correct cloning of RegExp objects
 
 ## config
 
