@@ -136,11 +136,11 @@ const res = deepClone(source, {
 The default config is the following:
 ```js
 deepClone(source, {
-    invokeConstructors = true,
-    setPrototype = false,
-    copyNonEnumerables = false,
-    copySymbols = false,
-    copyGettersSetters = false,
+    invokeConstructors : true,
+    setPrototype : false,
+    copyNonEnumerables : false,
+    copySymbols : false,
+    copyGettersSetters : false,
     allowCircularReferences: false,
 });
 ```
