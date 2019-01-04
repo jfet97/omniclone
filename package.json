@@ -1,0 +1,37 @@
+{
+  "name": "deepclone",
+  "version": "0.1.0",
+  "description": "deepClone function for js objects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfet97/deepClone.git"
+  },
+  "keywords": [
+    "javascript",
+    "clone",
+    "cloning",
+    "object",
+    "objetcs",
+    "circular",
+    "reference",
+    "references"
+  ],
+  "author": "Andrea Simone Costa <andrysimo1997@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfet97/deepClone/issues"
+  },
+  "homepage": "https://github.com/jfet97/deepClone#readme",
+  "devDependencies": {
+    "eslint": "^5.11.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "prettier": "^1.15.3"
+  }
+}
