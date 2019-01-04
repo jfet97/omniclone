@@ -1,5 +1,5 @@
 # deepClone
-A customizable javascript deepClone function for object cloning that is fool proof
+A customizable and fool proof javascript function for object deep cloning
 ```
 deepClone(source, config);
 ```
