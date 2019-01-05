@@ -666,6 +666,44 @@ describe("omniclone", () => {
     })();
   });
 
+  it("should properly clone an Array if the invokeConstructors flag is set", () => {
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const res = omniclone(arr);
+
+      expect(Array.isArray(res)).toBeTruthy();
+      expect(res).toEqual(arr);
+    })();
+
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const res = omniclone(arr, {
+        invokeConstructors: true
+      });
+
+      expect(Array.isArray(res)).toBeTruthy();
+      expect(res).toEqual(arr);
+    })();
+
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const ob1 = { arr };
+      const res = omniclone(ob1);
+
+      expect(Array.isArray(res.arr)).toBeTruthy();
+      expect(res.arr).toEqual(ob1.arr);
+    })();
+
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const ob1 = { arr };
+      const res = omniclone(ob1);
+
+      expect(Array.isArray(res.arr)).toBeTruthy();
+      expect(res.arr).toEqual(ob1.arr);
+    })();
+  });
+
   it(`should not copy a non config prop setted by the calling to a constructor`, () => {
     (() => {
       class Test {
