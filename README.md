@@ -1,5 +1,5 @@
 # omniclone
-A customizable and fool proof javascript function for object deep cloning
+An isomorphic, customizable and fool proof javascript function for object deep cloning
 ```js
 omniclone(source, config);
 ```
