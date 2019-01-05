@@ -14,7 +14,7 @@ describe("omniclone", () => {
 
   it(`should set setPrototype to false, invokeConstructors to true, discardErrorObjects to true,
       copyNonEnumerables to false, copySymbols to false, copyGettersSetters to false and
-      allowCircularReferences to false if there the config argument is undefined`, () => {
+      allowCircularReferences to false if the config argument is undefined`, () => {
     (() => {
       let i = 0;
       class Test {
