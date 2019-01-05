@@ -1,17 +1,17 @@
 {
   "name": "omniclone",
-  "version": "0.2.0",
-  "description": "deepClone function for js objects",
+  "version": "0.2.1",
+  "description": "deep cloning function for js objects",
   "main": "dist/main.js",
   "scripts": {
     "test": "jest --watchAll --coverage",
-    "dev": "webpack --mode development src/deepClone.js",
-    "build": "webpack --mode production src/deepClone.js",
+    "dev": "webpack --mode development src/omniclone.js",
+    "build": "webpack --mode production src/omniclone.js",
     "lint": "eslint"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jfet97/deepClone.git"
+    "url": "git+https://github.com/jfet97/omniclone.git"
   },
   "files": [
     "dist"
@@ -29,9 +29,9 @@
   "author": "Andrea Simone Costa <andrysimo1997@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jfet97/deepClone/issues"
+    "url": "https://github.com/jfet97/omniclone/issues"
   },
-  "homepage": "https://github.com/jfet97/deepClone#readme",
+  "homepage": "https://github.com/jfet97/omniclone#readme",
   "devDependencies": {
     "babel-jest": "^23.6.0",
     "babel-preset-env": "^1.7.0",

@@ -154,7 +154,18 @@ module.exports = function omniclone(
       if (!copyGettersSetters && (descriptor.get || descriptor.set)) return;
 
       if (value && typeof value === "object") {
-        // PRIOR check for circular references -
+        // check for duplicated sibiling object references
+        // const duplicatedObj = {};
+        // const source = {
+        //      a: duplicatedObj
+        //      b: duplicatedObj
+        // }
+        if (safeReferences.has(value)) {
+          res[prop] = safeReferences.get(value);
+          return;
+        }
+
+        // check for circular references -
         if (references.has(value)) {
           if (!allowCircularReferences) {
             throw new TypeError("TypeError: circular reference found");
@@ -167,18 +178,6 @@ module.exports = function omniclone(
             res[prop] = references.get(value);
             return;
           }
-        }
-
-        // check for duplicated sibiling object references
-        // const duplicatedObj = {};
-        // const sourcej = {
-        //      a: duplicatedObj
-        //      b: duplicatedObj
-        // }
-
-        if (safeReferences.has(value)) {
-          res[prop] = safeReferences.get(value);
-          return;
         }
 
         // do not copy Error objects

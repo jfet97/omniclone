@@ -1,7 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/deepClone.js",
+  entry: "./src/omniclone.js",
   output: {
     filename: "main.js",
     library: "omnicode",

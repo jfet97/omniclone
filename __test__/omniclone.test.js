@@ -1,4 +1,4 @@
-const omniclone = require("../src/deepClone");
+const omniclone = require("../src/omniclone");
 
 describe("it works", () => {
   it("should work", () => {
@@ -663,6 +663,189 @@ describe("omniclone", () => {
         expect(res.d.getTime()).toBe(ob1.d.getTime());
         done();
       });
+    })();
+  });
+
+  it(`should not copy a non config prop setted by the calling to a constructor`, () => {
+    (() => {
+      class Test {
+        constructor() {
+          Object.defineProperty(this, "prop", {
+            configurable: false,
+            writable: false,
+            enumerable: true,
+            value: 42
+          });
+        }
+      }
+      const test = new Test();
+      expect(() => {
+        omniclone(test);
+      }).not.toThrow(
+        `TypeError: can't redefine non-configurable property prop`
+      );
+    })();
+  });
+
+  it(`should properly copy [[Prototype]], constructor, props, non-enum props, gets&sets and shallow copy symbols`, () => {
+    (() => {
+      const testObj = {};
+      testObj.foo = "bar";
+      Object.defineProperty(testObj, "notEnum", {
+        enumerable: false,
+        value: 42
+      });
+      Object.defineProperty(testObj, "g&s", {
+        get: () => 42,
+        set: () => {}
+      });
+      testObj.symbol = Symbol("symbol");
+
+      const res = omniclone(testObj, {
+        copyGettersSetters: true,
+        copySymbols: true,
+        copyNonEnumerables: true
+      });
+
+      expect(res === testObj).toBeFalsy();
+      expect(res).toEqual(testObj);
+      expect(res.constructor).toEqual(testObj.constructor);
+      expect(Object.getPrototypeOf(res)).toEqual(
+        Object.getPrototypeOf(testObj)
+      );
+
+      expect(res.foo).toBe("bar");
+      expect(Object.getOwnPropertyDescriptor(res, "notEnum")).toEqual(
+        Object.getOwnPropertyDescriptor(testObj, "notEnum")
+      );
+      expect(Object.getOwnPropertyDescriptor(res, "g&s")).toEqual(
+        Object.getOwnPropertyDescriptor(testObj, "g&s")
+      );
+      expect(res.symbol).toBe(testObj.symbol); // shallow copy symbols
+    })();
+
+    (() => {
+      const testObj = {};
+      testObj.foo = "bar";
+      Object.defineProperty(testObj, "notEnum", {
+        enumerable: false,
+        value: 42
+      });
+      Object.defineProperty(testObj, "g&s", {
+        get: () => 42,
+        set: () => {}
+      });
+      testObj.symbol = Symbol("symbol");
+      testObj.innerObj = {
+        prop: "value",
+        symbol: Symbol("innerSymbol")
+      };
+
+      const res = omniclone(testObj, {
+        copyGettersSetters: true,
+        copySymbols: true,
+        copyNonEnumerables: true
+      });
+
+      expect(res === testObj).toBeFalsy();
+      expect(res.innerObj === testObj.innerObj).toBeFalsy();
+      expect(res).toEqual(testObj);
+      expect(res.innerObj).toEqual(testObj.innerObj);
+      expect(res.constructor).toEqual(testObj.constructor);
+      expect(Object.getPrototypeOf(res)).toEqual(
+        Object.getPrototypeOf(testObj)
+      );
+
+      expect(res.foo).toBe("bar");
+      expect(Object.getOwnPropertyDescriptor(res, "notEnum")).toEqual(
+        Object.getOwnPropertyDescriptor(testObj, "notEnum")
+      );
+      expect(Object.getOwnPropertyDescriptor(res, "g&s")).toEqual(
+        Object.getOwnPropertyDescriptor(testObj, "g&s")
+      );
+      expect(res.symbol).toBe(testObj.symbol); // shallow copy symbols
+      expect(res.innerObj.symbol).toBe(testObj.innerObj.symbol); // shallow copy symbols
+      expect(res.innerObj.prop).toBe(testObj.innerObj.prop);
+    })();
+  });
+
+  it(`should properly restore a circular references structure`, () => {
+    (() => {
+      const ob1 = { value: 1 };
+
+      const ob2 = { value: 2 };
+
+      const ob3 = { value: 3 };
+
+      const ob4 = { value: 4 };
+
+      ob1.ob2 = ob2;
+      ob1.ob4 = ob4;
+      ob2.ob3 = ob3;
+      ob3.ob1 = ob1;
+      ob4.ob3 = ob3;
+
+      const res = omniclone(ob1, {
+        allowCircularReferences: true
+      });
+
+      // checks for differents references between old and new structure
+      expect(res === ob1).toBeFalsy();
+      expect(res.ob2 === ob1.ob2).toBeFalsy();
+      expect(res.ob4 === ob1.ob4).toBeFalsy();
+      expect(res.ob2.ob3 === ob1.ob2.ob3).toBeFalsy();
+      expect(res.ob2.ob3.ob1 === ob1.ob2.ob3.ob1).toBeFalsy();
+
+      // check for equals references inside the returned object
+      expect(res.ob2.ob3.ob1 === res).toBeTruthy();
+      expect(res.ob4.ob3 === res.ob2.ob3).toBeTruthy();
+
+      // check for props equality
+      expect(res).toEqual(ob1);
+    })();
+  });
+
+  it(`should properly handle duplicated sibiling object references without circular references`, () => {
+    (() => {
+      const duplicatedObj = {};
+      const source = {
+        a: duplicatedObj,
+        b: duplicatedObj
+      };
+      duplicatedObj.prop = "value";
+
+      const res = omniclone(source);
+
+      expect(res.a).toBe(res.b);
+      expect(res === source).toBeFalsy();
+      expect(res.a === source.a).toBeFalsy();
+
+      // props check
+      expect(res).toEqual(source);
+    })();
+  });
+
+  it(`should properly handle duplicated sibiling object references with circular references`, () => {
+    (() => {
+      const duplicatedObj = {};
+      const source = {
+        a: duplicatedObj,
+        b: duplicatedObj
+      };
+      duplicatedObj.prop = "value";
+      duplicatedObj.source = source;
+
+      const res = omniclone(source, {
+        allowCircularReferences: true
+      });
+
+      expect(res.a).toBe(res.b);
+      expect(res === source).toBeFalsy();
+      expect(res.a === source.a).toBeFalsy();
+      expect(res.a.source === source.a.source).toBeFalsy();
+
+      // props check
+      expect(res).toEqual(source);
     })();
   });
 });
