@@ -1,4 +1,4 @@
-export default function omniclone(
+module.exports = function omniclone(
   obj = {},
   {
     setPrototype = false,
@@ -13,8 +13,32 @@ export default function omniclone(
     throw new TypeError("TypeError: invalid 'obj' argument's type");
   }
 
+  if (
+    obj instanceof Number ||
+    obj instanceof String ||
+    obj instanceof Boolean
+  ) {
+    throw new TypeError("TypeError: wrapper objects are not allowed as source");
+  }
+
+  if (obj instanceof Promise) {
+    throw new TypeError("TypeError: Promises are not allowed as source");
+  }
+
   if (obj instanceof Error) {
     throw new TypeError("TypeError: cannot copy Error objects");
+  }
+
+  if (obj instanceof RegExp) {
+    const { source, flags, lastIndex } = obj;
+    const retVal = new RegExp(source, flags);
+    retVal.lastIndex = lastIndex;
+    return retVal;
+  }
+
+  // Date objects are cloned mantaining the same Date
+  if (obj instanceof Date) {
+    return new Date(obj.getTime());
   }
 
   const config = {
@@ -89,7 +113,8 @@ export default function omniclone(
     // must be invocated.
     if (invokeConstructors) {
       res = new source.constructor();
-      // if so, the [[Prototype]] prop is already set up
+      // if so, the [[Prototype]] prop is set to constructor.protoype
+      // so it could be different from the source [[Prototype]]
     } else if (setPrototype) {
       // if not, we have to choose what to do with the [[Prototype]] prop
       // setPrototype flag indicates if we have to set up the same [[Prototype]] prop
@@ -125,6 +150,7 @@ export default function omniclone(
       // copyGettersSetters setted to true indicates that
       // we can copy getters and setters
       // if we mustn't copy g||s and the current prop has g||s we return
+
       if (!copyGettersSetters && (descriptor.get || descriptor.set)) return;
 
       if (value && typeof value === "object") {
@@ -162,11 +188,7 @@ export default function omniclone(
 
         // The Boolean, Number, and String objects are converted
         // to the corresponding primitive values
-        if (
-          value instanceof String ||
-          value instanceof Number ||
-          value instanceof Boolean
-        ) {
+        if (value instanceof Number || value instanceof Boolean) {
           const newValue = descriptor.value.valueOf();
           Object.defineProperty(res, prop, {
             ...descriptor,
@@ -175,7 +197,17 @@ export default function omniclone(
           return;
         }
 
-        // Date objects are cloned mantaining the same Date
+        if (value instanceof String) {
+          const newValue = descriptor.value.toString();
+
+          Object.defineProperty(res, prop, {
+            ...descriptor,
+            ...{ value: newValue }
+          });
+          return;
+        }
+
+        // Date prop objects are cloned mantaining the same Date
         if (value instanceof Date) {
           const newValue = new Date(descriptor.value.getTime());
           Object.defineProperty(res, prop, {
@@ -229,8 +261,12 @@ export default function omniclone(
         // value == reference to the current object / res[prop] == reference to the resulting copied object
         safeReferences.set(value, res[prop]);
       } else {
-        // shallow copy for others props
-        Object.defineProperty(res, prop, descriptor);
+        const propDesc = Object.getOwnPropertyDescriptor(res, prop);
+        if (!propDesc || propDesc.configurable) {
+          // shallow copy for others props only if the previously invoked constructor has not already insert
+          // a corresponding non config prop
+          Object.defineProperty(res, prop, descriptor);
+        }
       }
     });
 
@@ -281,4 +317,4 @@ export default function omniclone(
     // return the result
     return res;
   })(obj, config, references, start);
-}
+};

@@ -132,6 +132,7 @@ const res = omniclone(source, {
   copyGettersSetters: true
 });
 ```
+Odds are that to properly copy gets&setts you have also to enable the `copyNonEnumerables` flag.
 
 ### allowCircularReferences (default false)
 Enable it to allow circular references.\
@@ -171,7 +172,8 @@ JSON.stringify(source); // '{"a":{"foo":"bar"},"b":{"foo":"bar"}}'
 When you will use `JSON.parse()`, an `{"foo":"bar"}` object will be created for the `a` prop and a `{"foo":"bar"}` distinct object will be created for the `b` prop. But this is not the initial situation where `source.a == source.b; // true`.
 
 
-## warnings
+## warnings and limitations
 1. promises and methods are always copied by reference
 2. `super` is statically bound to a class heirarchy, remember it
-3. `Error` objects cannot be copied
+3. `Error` objects cannot be properly copied because of js limitations
+4. currently there is no isomorphic way to detect if an object is a `Proxy` nor is possible to access the handler object. Because of transparent virtualization, `omniclone` will copy each properties, the `constructor` and the `[[Prototype]]` directly from the proxed object. 

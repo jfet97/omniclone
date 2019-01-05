@@ -1,12 +1,13 @@
 {
   "name": "omniclone",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "deepClone function for js objects",
   "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watchAll --coverage",
     "dev": "webpack --mode development src/deepClone.js",
-    "build": "webpack --mode production src/deepClone.js"
+    "build": "webpack --mode production src/deepClone.js",
+    "lint": "eslint"
   },
   "repository": {
     "type": "git",
@@ -32,13 +33,22 @@
   },
   "homepage": "https://github.com/jfet97/deepClone#readme",
   "devDependencies": {
+    "babel-jest": "^23.6.0",
+    "babel-preset-env": "^1.7.0",
     "eslint": "^5.11.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^22.1.2",
     "eslint-plugin-prettier": "^3.0.1",
+    "jest": "^23.6.0",
     "prettier": "^1.15.3",
     "webpack": "^4.28.3",
     "webpack-cli": "^3.2.0"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    }
   }
 }
