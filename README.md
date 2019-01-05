@@ -10,7 +10,8 @@ const obj = { foo: { bar: 'baz' } };
 const obj2 = omniclone(obj);
 
 obj2; // { foo: { bar: 'baz' } };
-obj == obj2; // false
+obj === obj2; // false
+obj.foo === obj2.foo; // false
 ```
 ## installation
 ```
