@@ -6,7 +6,8 @@ module.exports = function omniclone(
     copyNonEnumerables = false,
     copySymbols = false,
     copyGettersSetters = false,
-    allowCircularReferences = false
+    allowCircularReferences = false,
+    discardErrorObjects = true
   } = {}
 ) {
   if (!obj || typeof obj !== "object") {
@@ -18,14 +19,17 @@ module.exports = function omniclone(
     obj instanceof String ||
     obj instanceof Boolean
   ) {
-    throw new TypeError("TypeError: wrapper objects are not allowed as source");
+    return null;
   }
 
   if (obj instanceof Promise) {
-    throw new TypeError("TypeError: Promises are not allowed as source");
+    return obj;
   }
 
   if (obj instanceof Error) {
+    if (discardErrorObjects) {
+      return null;
+    }
     throw new TypeError("TypeError: cannot copy Error objects");
   }
 
@@ -47,7 +51,8 @@ module.exports = function omniclone(
     copyNonEnumerables,
     copySymbols,
     copyGettersSetters,
-    allowCircularReferences
+    allowCircularReferences,
+    discardErrorObjects
   };
 
   if (typeof setPrototype !== "boolean") {
@@ -69,10 +74,15 @@ module.exports = function omniclone(
   if (typeof copyGettersSetters !== "boolean") {
     throw new TypeError("TypeError: invalid 'copyGettersSetters' flag's type");
   }
+
   if (typeof allowCircularReferences !== "boolean") {
     throw new TypeError(
       "TypeError: invalid 'allowCircularReferences' flag's type"
     );
+  }
+
+  if (typeof discardErrorObjects !== "boolean") {
+    throw new TypeError("TypeError: invalid 'discardErrorObjects' flag's type");
   }
 
   // circular references guard
@@ -92,7 +102,8 @@ module.exports = function omniclone(
       copyNonEnumerables,
       copySymbols,
       copyGettersSetters,
-      allowCircularReferences
+      allowCircularReferences,
+      discardErrorObjects
     },
     references,
     start
@@ -180,8 +191,11 @@ module.exports = function omniclone(
           }
         }
 
-        // do not copy Error objects
+        // check discardErrorObjects flag to see how to handle Error objects
         if (value instanceof Error) {
+          if (discardErrorObjects) {
+            return;
+          }
           throw new TypeError("TypeError: cannot copy Error objects");
         }
 
@@ -250,7 +264,8 @@ module.exports = function omniclone(
             copyNonEnumerables,
             copySymbols,
             copyGettersSetters,
-            allowCircularReferences
+            allowCircularReferences,
+            discardErrorObjects
           },
           references,
           start
