@@ -169,15 +169,15 @@ omniclone(source, {
 
 ## what about String, Boolean, Number, Error and Promise objects?
 
-String, Boolean and Number objects passed to `omniclone` as sources will produce `null`.
-Error objects passed to `omniclone` as sources will produce `null` if the `discardErrorObjects` is set to `true` (as default).
-Error objects passed to `omniclone` as sources will produce a `TypeError` if the `discardErrorObjects` is set to `false` (not the predefined behaviour).
+String, Boolean and Number objects passed to `omniclone` as sources will produce `null`.\
+Error objects passed to `omniclone` as sources will produce `null` if the `discardErrorObjects` is set to `true` (as default).\
+Error objects passed to `omniclone` as sources will produce a `TypeError` if the `discardErrorObjects` is set to `false` (not the predefined behaviour).\
 
-String, Boolean and Number objects props will be unwrapped.
-Error objects props will be discarded if the `discardErrorObjects` is set to `true` (as default).
-Error objects props will produce a `TypeError` if the `discardErrorObjects` is set to `false` (not the predefined behaviour).
+String, Boolean and Number objects props will be unwrapped.\
+Error objects props will be discarded if the `discardErrorObjects` is set to `true` (as default).\
+Error objects props will produce a `TypeError` if the `discardErrorObjects` is set to `false` (not the predefined behaviour).\
 
-Promise objects will be returned if passed to `omniclone` as sources.
+Promise objects will be returned if passed to `omniclone` as sources.\
 Promise objects props will be shallow copied.
 
 ## what about the 6th strength?
