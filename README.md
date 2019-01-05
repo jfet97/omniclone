@@ -27,11 +27,11 @@ import omniclone from 'omniclone';
 1. automatically invoke object constructors before copying properties (customizable behavior)
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
 3. let you to clone objects with circular references (customizable behavior)
-4. handle String, Boolean, Number and Date objects in the right way:  String, Boolean, and Number objects are unwrapped - Date objects are exactly copied
-5. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
+4. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
+5. correct handling of String, Boolean, Number, Error and Promise objects
 6. safe similar sibilings references are not duplicated
-7. correct cloning of Array objects (if the `invokeConstructors` flagis setted)
-8. correct cloning of RegExp objects
+7. correct cloning of Array objects (if the `invokeConstructors` flag is setted)
+8. correct cloning of RegExp and Date objects
 
 ## config
 
@@ -143,6 +143,16 @@ const res = omniclone(source, {
 });
 ```
 
+### discardErrorObjects (default true)
+Enable it to discard Error objects props.\
+Know that `omnicopy` will return `null` if one is passed as source.\
+Disable it to throw an error if one is met.
+```js
+const res = omniclone(source, {
+  discardErrorObjects: true
+});
+```
+
 ## default config
 The default config is the following:
 ```js
@@ -153,9 +163,22 @@ omniclone(source, {
     copySymbols : false,
     copyGettersSetters : false,
     allowCircularReferences: false,
+    discardErrorObjects: true,
 });
 ```
 
+## what about String, Boolean, Number, Error and Promise objects?
+
+String, Boolean and Number objects passed to `omniclone` as sources will produce `null`.
+Error objects passed to `omniclone` as sources will produce `null` if the `discardErrorObjects` is set to `true` (as default).
+Error objects passed to `omniclone` as sources will produce a `TypeError` if the `discardErrorObjects` is set to `false` (not the predefined behaviour).
+
+String, Boolean and Number objects props will be unwrapped.
+Error objects props will be discarded if the `discardErrorObjects` is set to `true` (as default).
+Error objects props will produce a `TypeError` if the `discardErrorObjects` is set to `false` (not the predefined behaviour).
+
+Promise objects will be returned if passed to `omniclone` as sources.
+Promise objects props will be shallow copied.
 
 ## what about the 6th strength?
 

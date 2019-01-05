@@ -12,7 +12,7 @@ describe("omniclone", () => {
     expect(t).toBeDefined();
   });
 
-  it(`should set setPrototype to false, invokeConstructors to true,
+  it(`should set setPrototype to false, invokeConstructors to true, discardErrorObjects to true,
       copyNonEnumerables to false, copySymbols to false, copyGettersSetters to false and
       allowCircularReferences to false if there the config argument is undefined`, () => {
     (() => {
@@ -49,6 +49,19 @@ describe("omniclone", () => {
       ob1.ob1 = ob1;
       omniclone(ob1);
     }).toThrow(TypeError("TypeError: circular reference found"));
+
+    (() => {
+      class MyError extends Error {}
+      const res = omniclone(new MyError());
+      expect(res).toBeNull();
+    })();
+
+    (() => {
+      class MyError extends Error {}
+      const ob1 = { e: new MyError() };
+      const res = omniclone(ob1);
+      expect(res.e).toBeUndefined();
+    })();
   });
 
   it("should throw a TypeError when omniclone is called with an invalid 'obj' argument's type", () => {
@@ -73,15 +86,53 @@ describe("omniclone", () => {
     }).toThrow(TypeError("TypeError: invalid 'obj' argument's type"));
   });
 
-  it("should throw a TypeError when omniclone is called with an Error object", () => {
+  it("should throw a TypeError when omniclone is called with an Error object and the discardErrorObjects is set to false", () => {
     expect(() => {
-      omniclone(new Error());
+      omniclone(new Error(), { discardErrorObjects: false });
     }).toThrow(TypeError("TypeError: cannot copy Error objects"));
 
     expect(() => {
       class CustomError extends Error {}
-      omniclone(new CustomError());
+      omniclone(new CustomError(), { discardErrorObjects: false });
     }).toThrow(TypeError("TypeError: cannot copy Error objects"));
+  });
+
+  it("should throw a TypeError when the discardErrorObjects flag setted into the config object passed to omniclone has not Boolean type", () => {
+    expect(() => {
+      omniclone({}, { discardErrorObjects: () => {} });
+    }).toThrow(
+      TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
+    );
+
+    expect(() => {
+      omniclone({}, { discardErrorObjects: {} });
+    }).toThrow(
+      TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
+    );
+
+    expect(() => {
+      omniclone({}, { discardErrorObjects: 42 });
+    }).toThrow(
+      TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
+    );
+
+    expect(() => {
+      omniclone({}, { discardErrorObjects: "" });
+    }).toThrow(
+      TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
+    );
+
+    expect(() => {
+      omniclone({}, { discardErrorObjects: "foo" });
+    }).toThrow(
+      TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
+    );
+
+    expect(() => {
+      omniclone({}, { discardErrorObjects: null });
+    }).toThrow(
+      TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
+    );
   });
 
   it("should throw a TypeError when the setPrototype flag setted into the config object passed to omniclone has not Boolean type", () => {
@@ -542,23 +593,37 @@ describe("omniclone", () => {
     })();
   });
 
-  it("should throw a TypeError when a prop is an Error object", () => {
+  it("should throw a TypeError when a prop is an Error object and the discardErrorObjects flag is set to false", () => {
     (() => {
       class MyError extends Error {}
       const ob1 = { p: new MyError() };
       expect(() => {
-        omniclone(ob1);
+        omniclone(ob1, { discardErrorObjects: false });
       }).toThrow(TypeError("TypeError: cannot copy Error objects"));
     })();
   });
 
-  it("should throw a TypeError when a String object is passed as source", () => {
-    expect(() => {
-      const str = new String("foo");
-      omniclone(str);
-    }).toThrow(
-      TypeError("TypeError: wrapper objects are not allowed as source")
-    );
+  it("should discard an Error object prop if the discardErrorObjects flag is set to true", () => {
+    (() => {
+      class MyError extends Error {}
+      const ob1 = { p: new MyError() };
+
+      const res = omniclone(ob1, { discardErrorObjects: true });
+      expect(res.p).toBeUndefined();
+    })();
+
+    (() => {
+      class MyError extends Error {}
+      const ob1 = { p: new MyError() };
+
+      const res = omniclone(ob1);
+      expect(res.p).toBeUndefined();
+    })();
+  });
+
+  it("should return null when a String object is passed as source", () => {
+    const str = new String("foo");
+    expect(omniclone(str)).toBeNull();
   });
 
   it("should convert String objects into primitive values ", () => {
@@ -569,13 +634,9 @@ describe("omniclone", () => {
     })();
   });
 
-  it("should throw a TypeError when a Number object is passed as source", () => {
-    expect(() => {
-      const n = new Number("1");
-      omniclone(n);
-    }).toThrow(
-      TypeError("TypeError: wrapper objects are not allowed as source")
-    );
+  it("should return null when a Number object is passed as source", () => {
+    const n = new Number("1");
+    expect(omniclone(n)).toBeNull();
   });
 
   it("should convert Number objects into primitive values ", () => {
@@ -586,13 +647,9 @@ describe("omniclone", () => {
     })();
   });
 
-  it("should throw a TypeError when a Boolean object is passed as source", () => {
-    expect(() => {
-      const b = new Boolean(true);
-      omniclone(b);
-    }).toThrow(
-      TypeError("TypeError: wrapper objects are not allowed as source")
-    );
+  it("should return null when a Boolean object is passed as source", () => {
+    const b = new Boolean(true);
+    expect(omniclone(b)).toBeNull();
   });
 
   it("should convert Boolean objects into primitive values ", () => {
@@ -603,10 +660,10 @@ describe("omniclone", () => {
     })();
   });
 
-  it("should throw a TypeError when a Promise object is passed as source", () => {
-    expect(() => {
-      omniclone(Promise.resolve());
-    }).toThrow(TypeError("TypeError: Promises are not allowed as source"));
+  it("should return the promise when a Promise object is passed as source", () => {
+    const p = Promise.resolve();
+    const res = omniclone(p);
+    expect(res).toBe(p);
   });
 
   it("should shallow copy a Promise prop", () => {
