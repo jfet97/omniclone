@@ -756,6 +756,7 @@ describe("omniclone", () => {
 
       expect(Array.isArray(res)).toBeTruthy();
       expect(res).toEqual(arr);
+      expect(res === arr).toBeFalsy();
     })();
 
     (() => {
@@ -964,9 +965,292 @@ describe("omniclone", () => {
       expect(res === source).toBeFalsy();
       expect(res.a === source.a).toBeFalsy();
       expect(res.a.source === source.a.source).toBeFalsy();
+      expect(res.a.source === res).toBeTruthy();
 
       // props check
       expect(res).toEqual(source);
+    })();
+  });
+
+  it(`should properly duplicate a simple Map (without circular references)`, () => {
+    (() => {
+      const map = new Map();
+      const key = {};
+      map.set("prop1", "value1");
+      map.set(key, {
+        a: {
+          a: "a"
+        },
+        b: 42
+      });
+
+      map.set(Symbol.iterator, 42); // symbols should be copied because in a Map them aren't 'hidden' keys
+
+      const res = omniclone(map);
+
+      expect(map === res).toBeFalsy();
+      expect(map.get("prop1") === res.get("prop1")).toBeTruthy();
+      expect(map.get(key) === res.get(key)).toBeFalsy();
+      expect(map.get(key)).toEqual(res.get(key));
+      expect(
+        map.get(Symbol.iterator) === res.get(Symbol.iterator)
+      ).toBeTruthy();
+      expect(map.size).toBe(res.size);
+    })();
+  });
+
+  it(`should properly duplicate a Map with circular references`, () => {
+    (() => {
+      const map = new Map();
+      const key = {};
+      map.set("prop1", "value1");
+      map.set(key, {
+        a: {
+          a: "a"
+        },
+        b: 42,
+        map
+      });
+      map.set(map, map);
+
+      const res = omniclone(map, {
+        allowCircularReferences: true
+      });
+
+      expect(map === res).toBeFalsy();
+      expect(map.get("prop1") === res.get("prop1")).toBeTruthy();
+      expect(map.get(key) === res.get(key)).toBeFalsy();
+      expect(map.size).toBe(res.size);
+
+      expect(map.get(key).map).toBe(map);
+      expect(res.get(key).map).toBe(res);
+
+      // map and object keys remains untouched, values needs to be updated
+      expect(res.get(map) === res).toBeTruthy();
+      expect(res.get(key).a === map.get(key).a).toBeFalsy();
+      expect(res.get(key).map === res).toBeTruthy();
+    })();
+  });
+
+  it(`it should throw a TypeError when a circular reference is found into a Map object and the allowCircularReferences flag is set to false`, () => {
+    (() => {
+      const map = new Map();
+      map.set(map, map);
+      expect(() => {
+        omniclone(map);
+      }).toThrow(TypeError("TypeError: circular reference found"));
+    })();
+
+    (() => {
+      const map = new Map();
+      map.set(map, map);
+      expect(() => {
+        omniclone(map, {
+          allowCircularReferences: false
+        });
+      }).toThrow(TypeError("TypeError: circular reference found"));
+    })();
+  });
+
+  it(`should properly handle duplicated sibiling object references into a Map without circular references`, () => {
+    (() => {
+      const duplicatedObj = {};
+      const map = new Map();
+      map.set("a", duplicatedObj);
+      map.set("b", duplicatedObj);
+
+      const res = omniclone(map);
+
+      expect(res.get("a")).toBe(res.get("b"));
+      expect(res === map).toBeFalsy();
+      expect(res.get("a") === map.get("a")).toBeFalsy();
+    })();
+  });
+
+  it(`should properly handle duplicated sibiling object references into a Map with circular references`, () => {
+    (() => {
+      const duplicatedObj = {};
+      const map = new Map();
+      map.set("a", duplicatedObj);
+      map.set("b", duplicatedObj);
+
+      duplicatedObj.map = map;
+      duplicatedObj.a = "a";
+
+      const res = omniclone(map, {
+        allowCircularReferences: true
+      });
+
+      expect(res.get("a")).toBe(res.get("b"));
+      expect(res === map).toBeFalsy();
+      expect(res.get("a") === map.get("a")).toBeFalsy();
+      expect(res.get("a").map === res).toBeTruthy();
+    })();
+  });
+
+  it(`should call the proper constructor for an object into a Map`, () => {
+    (() => {
+      class Test {}
+      const map = new Map();
+      map.set("a", new Test());
+
+      const res = omniclone(map);
+
+      expect(res.get("a").constructor).toBe(Test);
+      expect(res === map).toBeFalsy();
+      expect(res.get("a") === map.get("a")).toBeFalsy();
+      expect(
+        Object.getPrototypeOf(res.get("a")) === Test.prototype
+      ).toBeTruthy();
+    })();
+  });
+
+  it("should throw a TypeError when a value in a Map object is an Error object and the discardErrorObjects flag is set to false", () => {
+    (() => {
+      class MyError extends Error {}
+      const map = new Map();
+      map.set("p", new MyError());
+
+      expect(() => {
+        omniclone(map, { discardErrorObjects: false });
+      }).toThrow(TypeError("TypeError: cannot copy Error objects"));
+    })();
+  });
+
+  it("should discard an Error map element object if the discardErrorObjects flag is set to true", () => {
+    (() => {
+      class MyError extends Error {}
+      const map = new Map();
+      map.set("e", new MyError());
+
+      const res = omniclone(map, { discardErrorObjects: true });
+      expect(res.get("e")).toBeUndefined();
+    })();
+
+    (() => {
+      class MyError extends Error {}
+      const map = new Map();
+      map.set("e", new MyError());
+
+      const res = omniclone(map, { discardErrorObjects: true });
+
+      expect(res.get("e")).toBeUndefined();
+    })();
+  });
+
+  it("should convert String map elements into primitive values ", () => {
+    (() => {
+      const map = new Map();
+      const str = new String("foo");
+      map.set("s", str);
+      const res = omniclone(map);
+      expect(res.get("s")).toBe("foo");
+    })();
+  });
+
+  it("should convert Number map elements into primitive values ", () => {
+    (() => {
+      const map = new Map();
+      const n = new Number(1);
+      map.set("n", n);
+      const res = omniclone(map);
+      expect(res.get("n")).toBe(1);
+    })();
+  });
+
+  it("should convert Boolean map elements into primitive values ", () => {
+    (() => {
+      const map = new Map();
+      const b = new Boolean(true);
+      map.set("b", b);
+      const res = omniclone(map);
+      expect(res.get("b")).toBe(true);
+    })();
+  });
+
+  it("should shallow copy a Promise map element ", () => {
+    const map = new Map();
+    const p = Promise.resolve();
+    map.set("p", p);
+    const res = omniclone(map);
+    expect(res.get("p")).toBe(map.get("p"));
+  });
+
+  it("should shallow copy a WeakMap map element", () => {
+    const wm = new WeakMap();
+    const map = new Map();
+    map.set("wm", wm);
+    const res = omniclone(map);
+    expect(res.get("wm")).toBe(map.get("wm"));
+  });
+
+  it("should shallow copy a WeakSet map element", () => {
+    const ws = new WeakSet();
+    const map = new Map();
+    map.set("ws", ws);
+    const res = omniclone(map);
+    expect(res.get("ws")).toBe(map.get("ws"));
+  });
+
+  it("should clone a RegExp map element", () => {
+    (() => {
+      const map = new Map();
+      const r = new RegExp("foo", "g");
+      map.set("r", r);
+      r.lastIndex = 10;
+
+      const res = omniclone(map);
+      expect(res.get("r").flags).toBe(map.get("r").flags);
+      expect(res.get("r").source).toBe(map.get("r").source);
+      expect(res.get("r").lastIndex).toBe(map.get("r").lastIndex);
+    })();
+  });
+
+  it("should clone a Date map element", done => {
+    (() => {
+      const map = new Map();
+      const d = new Date();
+      map.set("d", d);
+
+      new Promise(ok => {
+        setTimeout(ok, 2000);
+      }).then(() => {
+        const res = omniclone(map);
+        expect(res.get("d").getTime()).toBe(map.get("d").getTime());
+        done();
+      });
+    })();
+  });
+
+  it("should properly clone an Array into a map if the invokeConstructors flag is set", () => {
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const map = new Map();
+      map.set("arr", arr);
+
+      const res = omniclone(map);
+
+      expect(Array.isArray(res.get("arr"))).toBeTruthy();
+      expect(res).toEqual(map);
+      expect(res.get("arr") === map.get("arr")).toBeFalsy();
+    })();
+
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const map = new Map();
+      map.set("arr", arr);
+      arr.push(map);
+      arr.push(map);
+
+      const res = omniclone(map, {
+        allowCircularReferences: true
+      });
+
+      expect(Array.isArray(res.get("arr"))).toBeTruthy();
+      expect(res.get("arr") === map.get("arr")).toBeFalsy();
+      expect(res.get("arr")[5] === map.get("arr")[5]).toBeFalsy();
+      expect(res.get("arr")[5] === res.get("arr")[6]).toBeTruthy();
+      expect(res.get("arr")[5] === res).toBeTruthy();
     })();
   });
 });
