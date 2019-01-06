@@ -1,100 +1,14 @@
-module.exports = function omniclone(
-  obj = {},
-  {
-    setPrototype = false,
-    invokeConstructors = true,
-    copyNonEnumerables = false,
-    copySymbols = false,
-    copyGettersSetters = false,
-    allowCircularReferences = false,
-    discardErrorObjects = true
-  } = {}
-) {
-  if (!obj || typeof obj !== "object") {
-    throw new TypeError("TypeError: invalid 'obj' argument's type");
-  }
-
-  if (
-    obj instanceof Number ||
-    obj instanceof String ||
-    obj instanceof Boolean
-  ) {
-    return null;
-  }
-
-  if (obj instanceof Promise) {
-    return obj;
-  }
-
-  if (obj instanceof Error) {
-    if (discardErrorObjects) {
-      return null;
-    }
-    throw new TypeError("TypeError: cannot copy Error objects");
-  }
-
-  if (obj instanceof RegExp) {
-    const { source, flags, lastIndex } = obj;
-    const retVal = new RegExp(source, flags);
-    retVal.lastIndex = lastIndex;
-    return retVal;
-  }
-
-  // Date objects are cloned mantaining the same Date
-  if (obj instanceof Date) {
-    return new Date(obj.getTime());
-  }
-
-  const config = {
-    setPrototype,
-    invokeConstructors,
-    copyNonEnumerables,
-    copySymbols,
-    copyGettersSetters,
-    allowCircularReferences,
-    discardErrorObjects
-  };
-
-  if (typeof setPrototype !== "boolean") {
-    throw new TypeError("TypeError: invalid 'setPrototype' flag's type");
-  }
-
-  if (typeof invokeConstructors !== "boolean") {
-    throw new TypeError("TypeError: invalid 'invokeConstructors' flag's type");
-  }
-
-  if (typeof copyNonEnumerables !== "boolean") {
-    throw new TypeError("TypeError: invalid 'copyNonEnumerables' flag's type");
-  }
-
-  if (typeof copySymbols !== "boolean") {
-    throw new TypeError("TypeError: invalid 'copySymbols' flag's type");
-  }
-
-  if (typeof copyGettersSetters !== "boolean") {
-    throw new TypeError("TypeError: invalid 'copyGettersSetters' flag's type");
-  }
-
-  if (typeof allowCircularReferences !== "boolean") {
-    throw new TypeError(
-      "TypeError: invalid 'allowCircularReferences' flag's type"
-    );
-  }
-
-  if (typeof discardErrorObjects !== "boolean") {
-    throw new TypeError("TypeError: invalid 'discardErrorObjects' flag's type");
-  }
-
+function deepClone(source, config) {
   // circular references guard
   // each analized object will store its reference here
   // so we can check each of its object properties to see if there are
   // reference to already analized objects
   const references = new WeakMap();
 
-  // A reference to the parent object
-  const start = obj;
+  // A reference to the initial source object
+  const start = source;
 
-  return (function realDeepCopy(
+  return (function innerDeepClone(
     source,
     {
       setPrototype,
@@ -256,20 +170,16 @@ module.exports = function omniclone(
         }
 
         // recursive deep copy for the others object props
-        res[prop] = realDeepCopy(
-          value,
-          {
-            setPrototype,
-            invokeConstructors,
-            copyNonEnumerables,
-            copySymbols,
-            copyGettersSetters,
-            allowCircularReferences,
-            discardErrorObjects
-          },
-          references,
-          start
-        );
+        const config = {
+          setPrototype,
+          invokeConstructors,
+          copyNonEnumerables,
+          copySymbols,
+          copyGettersSetters,
+          allowCircularReferences,
+          discardErrorObjects
+        };
+        res[prop] = innerDeepClone(value, config, references, start);
 
         // set the object reference to avoid sibiling duplicates
         // value == reference to the current object / res[prop] == reference to the resulting copied object
@@ -330,5 +240,97 @@ module.exports = function omniclone(
 
     // return the result
     return res;
-  })(obj, config, references, start);
-};
+  })(source, config, references, start);
+}
+
+function omniclone(
+  obj = {},
+  {
+    setPrototype = false,
+    invokeConstructors = true,
+    copyNonEnumerables = false,
+    copySymbols = false,
+    copyGettersSetters = false,
+    allowCircularReferences = false,
+    discardErrorObjects = true
+  } = {}
+) {
+  if (!obj || typeof obj !== "object") {
+    throw new TypeError("TypeError: invalid 'obj' argument's type");
+  }
+
+  if (
+    obj instanceof Number ||
+    obj instanceof String ||
+    obj instanceof Boolean
+  ) {
+    return null;
+  }
+
+  if (obj instanceof Promise) {
+    return obj;
+  }
+
+  if (obj instanceof Error) {
+    if (discardErrorObjects) {
+      return null;
+    }
+    throw new TypeError("TypeError: cannot copy Error objects");
+  }
+
+  if (obj instanceof RegExp) {
+    const { source, flags, lastIndex } = obj;
+    const retVal = new RegExp(source, flags);
+    retVal.lastIndex = lastIndex;
+    return retVal;
+  }
+
+  // Date objects are cloned mantaining the same Date
+  if (obj instanceof Date) {
+    return new Date(obj.getTime());
+  }
+
+  if (typeof setPrototype !== "boolean") {
+    throw new TypeError("TypeError: invalid 'setPrototype' flag's type");
+  }
+
+  if (typeof invokeConstructors !== "boolean") {
+    throw new TypeError("TypeError: invalid 'invokeConstructors' flag's type");
+  }
+
+  if (typeof copyNonEnumerables !== "boolean") {
+    throw new TypeError("TypeError: invalid 'copyNonEnumerables' flag's type");
+  }
+
+  if (typeof copySymbols !== "boolean") {
+    throw new TypeError("TypeError: invalid 'copySymbols' flag's type");
+  }
+
+  if (typeof copyGettersSetters !== "boolean") {
+    throw new TypeError("TypeError: invalid 'copyGettersSetters' flag's type");
+  }
+
+  if (typeof allowCircularReferences !== "boolean") {
+    throw new TypeError(
+      "TypeError: invalid 'allowCircularReferences' flag's type"
+    );
+  }
+
+  if (typeof discardErrorObjects !== "boolean") {
+    throw new TypeError("TypeError: invalid 'discardErrorObjects' flag's type");
+  }
+
+  const config = {
+    setPrototype,
+    invokeConstructors,
+    copyNonEnumerables,
+    copySymbols,
+    copyGettersSetters,
+    allowCircularReferences,
+    discardErrorObjects
+  };
+
+  return deepClone(obj, config);
+}
+
+module.exports = omniclone;

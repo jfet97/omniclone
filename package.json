@@ -1,6 +1,6 @@
 {
   "name": "omniclone",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "deep cloning function for js objects",
   "main": "dist/main.js",
   "scripts": {
