@@ -29,7 +29,7 @@ import omniclone from 'omniclone';
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
 3. let you to clone objects with circular references (customizable behavior)
 4. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
-5. correct handling of String, Boolean, Number, Error, Promise, WeakMap and WeakSet objects
+5. correct handling of String, Boolean, Number, Error, Promise, Map, WeakMap and WeakSet objects
 6. safe similar sibilings references are not duplicated
 7. correct cloning of Array objects (if the `invokeConstructors` flag is setted)
 8. correct cloning of RegExp and Date objects
@@ -168,7 +168,7 @@ omniclone(source, {
 });
 ```
 
-## what about String, Boolean, Number, Error, Promise, WeakMap and WeakSet objects?
+## what about String, Boolean, Number, Error, Promise, Map, WeakMap and WeakSet objects?
 
 String, Boolean and Number objects passed to `omniclone` as sources will produce `null`.\
 Error objects passed to `omniclone` as sources will produce `null` if the `discardErrorObjects` is set to `true` (as default).\
@@ -180,6 +180,8 @@ Error objects props will produce a `TypeError` if the `discardErrorObjects` is s
 
 Promise, WeakMap and WeakSet objects will be returned if passed to `omniclone` as sources.\
 Promise, WeakMap and WeakSet objects props will be shallow copied.
+
+Map objects will be deeply cloned following same rules of normal objects.
 
 ## what about the 6th strength?
 
@@ -201,4 +203,4 @@ When you will use `JSON.parse()`, an `{"foo":"bar"}` object will be created for 
 2. `super` is statically bound to a class heirarchy, remember it
 3. `Error` objects cannot be properly copied because of js limitations
 4. currently there is no isomorphic way to detect if an object is a `Proxy` nor is possible to access the handler object. Because of transparent virtualization, `omniclone` will copy each properties, the `constructor` and the `[[Prototype]]` directly from the proxed object.
-5. currenlty there is a lack of support for Map and Set objects. I'm working on this.
+5. currenlty there is a lack of support for Set objects. I'm working on this.
