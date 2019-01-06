@@ -29,7 +29,7 @@ import omniclone from 'omniclone';
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
 3. let you to clone objects with circular references (customizable behavior)
 4. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
-5. correct handling of String, Boolean, Number, Error, Promise, WeakMapm and WeakSet objects
+5. correct handling of String, Boolean, Number, Error, Promise, WeakMap and WeakSet objects
 6. safe similar sibilings references are not duplicated
 7. correct cloning of Array objects (if the `invokeConstructors` flag is setted)
 8. correct cloning of RegExp and Date objects
