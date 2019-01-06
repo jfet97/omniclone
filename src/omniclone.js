@@ -24,7 +24,11 @@ function omniclone(
     return null;
   }
 
-  if (obj instanceof Promise) {
+  if (
+    obj instanceof Promise ||
+    obj instanceof WeakMap ||
+    obj instanceof WeakSet
+  ) {
     return obj;
   }
 

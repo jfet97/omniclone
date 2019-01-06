@@ -666,11 +666,37 @@ describe("omniclone", () => {
     expect(res).toBe(p);
   });
 
+  it("should return the weakmap when a WeakMap object is passed as source", () => {
+    const wm = new WeakMap();
+    const res = omniclone(wm);
+    expect(res).toBe(wm);
+  });
+
+  it("should return the weakset when a WeakSet object is passed as source", () => {
+    const ws = new WeakSet();
+    const res = omniclone(ws);
+    expect(res).toBe(ws);
+  });
+
   it("should shallow copy a Promise prop", () => {
     const p = Promise.resolve();
     const ob1 = { p };
     const res = omniclone(ob1);
     expect(res.p).toBe(ob1.p);
+  });
+
+  it("should shallow copy a WeakMap prop", () => {
+    const wm = new WeakMap();
+    const ob1 = { wm };
+    const res = omniclone(ob1);
+    expect(res.vm).toBe(ob1.vm);
+  });
+
+  it("should shallow copy a WeakSet prop", () => {
+    const ws = new WeakSet();
+    const ob1 = { ws };
+    const res = omniclone(ob1);
+    expect(res.ws).toBe(ob1.ws);
   });
 
   it("should clone a RegExp if it is passed as source", () => {

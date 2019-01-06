@@ -143,6 +143,18 @@ function deepClone(source, config) {
             return;
           }
 
+          // WeakMaps are shallow cloned
+          if (value instanceof WeakMap) {
+            Object.defineProperty(res, prop, descriptor);
+            return;
+          }
+
+          // WeakSets are shallow cloned
+          if (value instanceof WeakSet) {
+            Object.defineProperty(res, prop, descriptor);
+            return;
+          }
+
           // recursive deep copy for the others object props
           // eslint-disable-next-line no-use-before-define
           res[prop] = innerDeepClone(value, config, references, start);
