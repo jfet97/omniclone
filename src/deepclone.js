@@ -8,7 +8,7 @@ function deepClone(source, config) {
   // A reference to the initial source object
   const start = source;
 
-  function propsHandler(res, descriptors, config) {
+  function propsHandler(res, descriptors, config, references) {
     // sibiling safe references
     // if an object contains another object more than one times
     // storing its reference in more than one prop
@@ -18,7 +18,13 @@ function deepClone(source, config) {
     // if circular references are not supported
 
     // it will be called just after the definition
-    function innerPropsHandler(res, descriptors, safeReferences, config) {
+    function innerPropsHandler(
+      res,
+      descriptors,
+      config,
+      safeReferences,
+      references
+    ) {
       const {
         copyNonEnumerables,
         copySymbols,
@@ -154,7 +160,13 @@ function deepClone(source, config) {
         }
       });
     }
-    return innerPropsHandler(res, descriptors, safeReferences, config);
+    return innerPropsHandler(
+      res,
+      descriptors,
+      config,
+      safeReferences,
+      references
+    );
   }
 
   function updateReferences(res, references) {
@@ -229,7 +241,7 @@ function deepClone(source, config) {
     }
 
     // deep copy each prop from the source object to the res object and put them into the res object
-    propsHandler(res, ownPropsDcps, config);
+    propsHandler(res, ownPropsDcps, config, references);
 
     // circular references update from temp old values to new ones
     if (allowCircularReferences) {
