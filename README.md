@@ -119,8 +119,6 @@ const res = omniclone(obj1, {
   setPrototype: true
 });
 Object.getPrototypeOf(res) === prot; // true
-
-res; // { }
 ```
 
 ### copyNonEnumerables (default false)
