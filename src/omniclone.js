@@ -1,4 +1,7 @@
-const deepClone = require("./deepclone");
+const deepClone = require("./deepClone");
+const errorObjectsHandler = require("./handlers/errorsObjectsHandlers");
+const regexpObjectsHandler = require("./handlers/regexpObjectsHanlder");
+const dateObjectsHandler = require("./handlers/dateObjectsHandler");
 
 function omniclone(
   obj = {},
@@ -33,22 +36,16 @@ function omniclone(
   }
 
   if (obj instanceof Error) {
-    if (discardErrorObjects) {
-      return null;
-    }
-    throw new TypeError("TypeError: cannot copy Error objects");
+    return errorObjectsHandler(discardErrorObjects);
   }
 
   if (obj instanceof RegExp) {
-    const { source, flags, lastIndex } = obj;
-    const retVal = new RegExp(source, flags);
-    retVal.lastIndex = lastIndex;
-    return retVal;
+    return regexpObjectsHandler(obj);
   }
 
   // Date objects are cloned mantaining the same Date
   if (obj instanceof Date) {
-    return new Date(obj.getTime());
+    return dateObjectsHandler(obj);
   }
 
   if (typeof setPrototype !== "boolean") {
