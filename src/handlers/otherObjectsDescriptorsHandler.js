@@ -1,4 +1,4 @@
-const errorObjectsHandler = require("./errorsObjectsHandlers");
+const errorObjectsHandler = require("./errorsObjectsHandler");
 const regexpObjectsHandler = require("./regexpObjectsHanlder");
 const dateObjectsHandler = require("./dateObjectsHandler");
 const primitiveObjectsHandler = require("./primitiveObjectsHandler");

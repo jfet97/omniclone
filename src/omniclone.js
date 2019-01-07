@@ -1,5 +1,5 @@
 const deepClone = require("./deepClone");
-const errorObjectsHandler = require("./handlers/errorsObjectsHandlers");
+const errorObjectsHandler = require("./handlers/errorsObjectsHandler");
 const regexpObjectsHandler = require("./handlers/regexpObjectsHanlder");
 const dateObjectsHandler = require("./handlers/dateObjectsHandler");
 
