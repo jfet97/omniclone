@@ -108,6 +108,21 @@ res instanceof Test; // true
 res.foo instanceof Test; // true
 ```
 
+```js
+const prot = { foo:'bar' };
+
+const obj1 = Object.create(prot);
+Object.getPrototypeOf(obj1) === prot; // true
+
+const res = omniclone(obj1, {
+  invokeConstructors: false,
+  setPrototype: true
+});
+Object.getPrototypeOf(res) === prot; // true
+
+res; // { }
+```
+
 ### copyNonEnumerables (default false)
 Enable it to deep copy also non enumerables properties.\
 Disable it to ignore them.
