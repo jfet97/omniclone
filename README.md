@@ -197,7 +197,7 @@ Error objects props will produce a `TypeError` if the `discardErrorObjects` is s
 Promise, WeakMap and WeakSet objects will be returned if passed to `omniclone` as sources.\
 Promise, WeakMap and WeakSet objects props will be copied by reference.
 
-Map objects will be deeply cloned following same rules of normal objects.
+Map objects will be deeply cloned following same rules of normal objects.\
 Set objects will be deeply cloned following same rules of normal objects.
 
 ## what about the 6th strength?
