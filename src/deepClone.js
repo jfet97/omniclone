@@ -27,9 +27,9 @@ function deepClone(source, config) {
     // result value
     let res = null;
 
-    // invokeConstructors flag indicates if the source constructor
-    // must be invocated.
     if (invokeConstructors) {
+      // invokeConstructors flag indicates if the source constructor
+      // must be invocated.
       res = new source.constructor();
       // if so, the [[Prototype]] prop is set to constructor.protoype
       // so it could be different from the source [[Prototype]]
@@ -44,7 +44,19 @@ function deepClone(source, config) {
       res = {};
     }
 
+    // special case: Array
+    // to properly create arrays even when invokeConstructors flag is false
+    // and/or when setPrototype flag is false too
+    if (source instanceof Array) {
+      res = [];
+    }
+
     if (source instanceof Map) {
+      // special case: Map
+      // to properly create maps even when invokeConstructors flag is false
+      // and/or when setPrototype flag is false too
+      res = new Map();
+
       // get the entries array
       const mapEntries = [...source.entries()];
 
@@ -58,6 +70,11 @@ function deepClone(source, config) {
         innerDeepClone
       );
     } else if (source instanceof Set) {
+      // special case: Set
+      // to properly create sets even when invokeConstructors flag is false
+      // and/or when setPrototype flag is false too
+      res = new Set();
+
       // get the values array
       const setEntries = [...source.values()];
 

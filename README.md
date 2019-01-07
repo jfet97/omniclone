@@ -65,7 +65,7 @@ res instanceof Test; // true
 res.foo instanceof Test; // true
 ```
 
-It is actually a default enabled setting, but you can disable it (loosing the ability to properly clone array, map and set objects).\
+It is actually a default enabled setting, but you can disable it (Array, Map and Set objects will be properly cloned anyway).\
 __It is highly discouraged to disable this flag__, do it only if you know what you are doing.
 
 If the `invokeConstructors` flag is set to `false`, a plain new object will be created for each object prop and for the resulting object as well. So the `constructor` prop will be set to the `Object` function, and the `[[Prototype]]` prop will be `Object.prototype`.\
@@ -74,6 +74,7 @@ Unless you use the `setPrototype` flag.
 
 ### setPrototype (default false)
 If the `invokeConstructors` flag is setted to `false` we could anyway share the `[[Prototype]]` object between the source object and the resulting object thanks to the `setPrototype` flag, __without calling the constructors__.\
+(Array, Map and Set objects will be properly cloned anyway because for them the constructor will be always called).\
 This means that the `constructor` prop will be shared as well because it is related to the `[[Prototype]]` prop.\
 This flag affects all the object properties as weel, like the previous flag.\
 If the `invokeConstructors` flag is setted to `true`, the `setPrototype` flag will be is ignored.
