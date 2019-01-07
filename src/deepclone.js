@@ -8,7 +8,7 @@ function deepClone(source, config) {
   // A reference to the initial source object
   const start = source;
 
-  function propsHandler(res, descriptors, config, references) {
+  function propsHandler(res, data, config, references) {
     // sibiling safe references
     // if an object contains another object more than one times
     // storing its reference in more than one prop
@@ -18,13 +18,7 @@ function deepClone(source, config) {
     // if circular references are not supported
 
     // it will be called just after the definition
-    function innerPropsHandler(
-      res,
-      descriptors,
-      config,
-      safeReferences,
-      references
-    ) {
+    function innerPropsHandler(res, data, config, safeReferences, references) {
       const {
         copyNonEnumerables,
         copySymbols,
@@ -33,10 +27,12 @@ function deepClone(source, config) {
         discardErrorObjects
       } = config;
 
-      if (Array.isArray(descriptors)) {
+      const { mapEntries, setEntries, ownPropsDcps: descriptors } = data;
+
+      if (mapEntries) {
         // we are dealing with map entries
 
-        for (const [key, value] of descriptors) {
+        for (const [key, value] of mapEntries) {
           if (value && typeof value === "object") {
             // check for duplicated sibiling object references
             // const duplicatedObj = {};
@@ -136,162 +132,246 @@ function deepClone(source, config) {
             res.set(key, value);
           }
         }
-      }
+      } else if (setEntries) {
+        // we are dealing with set entries
+        // for set key == value
 
-      Object.entries(descriptors).forEach(([prop, descriptor]) => {
-        const { value, enumerable } = descriptor;
-
-        // the copyNonEnumerables setted to true indicates that
-        // we can copy non enumerable props
-        // if we mustn't copy non enumerables and the current prop is no enumerable we return
-        if (!copyNonEnumerables && !enumerable) return;
-
-        // the copySymbols setted to true indicates that
-        // we can copy symbol props
-        // if we mustn't copy symbols and the current prop is a symbol we return
-        if (!copySymbols && typeof value === "symbol") return;
-
-        // copyGettersSetters setted to true indicates that
-        // we can copy getters and setters
-        // if we mustn't copy g||s and the current prop has g||s we return
-
-        if (!copyGettersSetters && (descriptor.get || descriptor.set)) return;
-
-        if (value && typeof value === "object") {
-          // check for duplicated sibiling object references
-          // const duplicatedObj = {};
-          // const source = {
-          //      a: duplicatedObj
-          //      b: duplicatedObj
-          // }
-          if (safeReferences.has(value)) {
-            res[prop] = safeReferences.get(value);
-            return;
-          }
-
-          // check for circular references -
-          if (references.has(value)) {
-            if (!allowCircularReferences) {
-              throw new TypeError("TypeError: circular reference found");
-            } else {
-              // if circulary references are allowed
-              // the temporary result is exactly the circ referred object
-              // it could be an 'old' object
-              // or an already copied object with or without
-              // some 'old' circ references inside it
-              res[prop] = references.get(value);
-              return;
+        for (const value of setEntries) {
+          if (value && typeof value === "object") {
+            // check for circular references -
+            if (references.has(value)) {
+              if (!allowCircularReferences) {
+                throw new TypeError("TypeError: circular reference found");
+              } else {
+                // if circulary references are allowed
+                // the temporary result is exactly the circ referred object
+                // it could be an 'old' object (map included)
+                // or an already copied object with or without
+                // some 'old' circ references inside it
+                res.add(references.get(value));
+                continue;
+              }
             }
-          }
 
-          // check discardErrorObjects flag to see how to handle Error objects
-          if (value instanceof Error) {
-            if (discardErrorObjects) {
-              return;
+            // check discardErrorObjects flag to see how to handle Error objects
+            if (value instanceof Error) {
+              if (discardErrorObjects) {
+                continue;
+              }
+              throw new TypeError("TypeError: cannot copy Error objects");
             }
-            throw new TypeError("TypeError: cannot copy Error objects");
-          }
 
-          // The Boolean, Number, and String objects are converted
-          // to the corresponding primitive values
-          if (value instanceof Number || value instanceof Boolean) {
-            const newValue = descriptor.value.valueOf();
-            Object.defineProperty(res, prop, {
-              ...descriptor,
-              ...{ value: newValue }
-            });
-            return;
-          }
+            // The Boolean, Number, and String objects are converted
+            // to the corresponding primitive values
+            if (value instanceof Number || value instanceof Boolean) {
+              res.add(value.valueOf());
+              continue;
+            }
 
-          if (value instanceof String) {
-            const newValue = descriptor.value.toString();
+            if (value instanceof String) {
+              res.add(value.toString());
+              continue;
+            }
 
-            Object.defineProperty(res, prop, {
-              ...descriptor,
-              ...{ value: newValue }
-            });
-            return;
-          }
+            // Date prop objects are cloned mantaining the same Date
+            if (value instanceof Date) {
+              const date = new Date(value.getTime());
+              res.add(date);
+              continue;
+            }
 
-          // Date prop objects are cloned mantaining the same Date
-          if (value instanceof Date) {
-            const newValue = new Date(descriptor.value.getTime());
-            Object.defineProperty(res, prop, {
-              ...descriptor,
-              ...{ value: newValue }
-            });
+            // RegExp cloning is automatically supported
+            if (value instanceof RegExp) {
+              const { lastIndex } = value;
+              const newValue = new RegExp(value.source, value.flags);
+              newValue.lastIndex = lastIndex;
+              res.add(newValue);
+              continue;
+            }
 
-            // set the object reference to avoid sibiling duplicates
-            safeReferences.set(value, res[prop]);
+            // Promises are shallow cloned
+            if (value instanceof Promise) {
+              res.add(value);
+              continue;
+            }
 
-            return;
-          }
+            // WeakMaps are shallow cloned
+            if (value instanceof WeakMap) {
+              res.add(value);
+              continue;
+            }
 
-          // RegExp cloning is automatically supported
-          if (value instanceof RegExp) {
-            const {
-              value: { lastIndex }
-            } = descriptor;
+            // WeakSets are shallow cloned
+            if (value instanceof WeakSet) {
+              res.add(value);
+              continue;
+            }
 
-            const newValue = new RegExp(
-              descriptor.value.source,
-              descriptor.value.flags
+            // recursive deep copy for the others object props
+            // eslint-disable-next-line no-use-before-define
+            const deepClonedValue = innerDeepClone(
+              value,
+              config,
+              references,
+              start
             );
-
-            Object.defineProperty(res, prop, {
-              ...descriptor,
-              ...{ value: newValue }
-            });
-            res[prop].lastIndex = lastIndex;
-
-            // set the object reference to avoid sibiling duplicates
-            safeReferences.set(value, res[prop]);
-
-            return;
-          }
-
-          // Promises are shallow cloned
-          if (value instanceof Promise) {
-            Object.defineProperty(res, prop, descriptor);
-            return;
-          }
-
-          // WeakMaps are shallow cloned
-          if (value instanceof WeakMap) {
-            Object.defineProperty(res, prop, descriptor);
-            return;
-          }
-
-          // WeakSets are shallow cloned
-          if (value instanceof WeakSet) {
-            Object.defineProperty(res, prop, descriptor);
-            return;
-          }
-
-          // recursive deep copy for the others object props
-          // eslint-disable-next-line no-use-before-define
-          res[prop] = innerDeepClone(value, config, references, start);
-
-          // set the object reference to avoid sibiling duplicates
-          // value == reference to the current object / res[prop] == reference to the resulting copied object
-          safeReferences.set(value, res[prop]);
-        } else {
-          const propDesc = Object.getOwnPropertyDescriptor(res, prop);
-          if (!propDesc || propDesc.configurable) {
-            // shallow copy for others props only if the previously invoked constructor has not already insert
-            // a corresponding non config prop
-            Object.defineProperty(res, prop, descriptor);
+            res.add(deepClonedValue);
+          } else {
+            // not an object (numeric values, functions, symbols)
+            res.add(value);
           }
         }
-      });
+      } else {
+        // if (descriptors)
+        Object.entries(descriptors).forEach(([prop, descriptor]) => {
+          const { value, enumerable } = descriptor;
+
+          // the copyNonEnumerables setted to true indicates that
+          // we can copy non enumerable props
+          // if we mustn't copy non enumerables and the current prop is no enumerable we return
+          if (!copyNonEnumerables && !enumerable) return;
+
+          // the copySymbols setted to true indicates that
+          // we can copy symbol props
+          // if we mustn't copy symbols and the current prop is a symbol we return
+          if (!copySymbols && typeof value === "symbol") return;
+
+          // copyGettersSetters setted to true indicates that
+          // we can copy getters and setters
+          // if we mustn't copy g||s and the current prop has g||s we return
+
+          if (!copyGettersSetters && (descriptor.get || descriptor.set)) return;
+
+          if (value && typeof value === "object") {
+            // check for duplicated sibiling object references
+            // const duplicatedObj = {};
+            // const source = {
+            //      a: duplicatedObj
+            //      b: duplicatedObj
+            // }
+            if (safeReferences.has(value)) {
+              res[prop] = safeReferences.get(value);
+              return;
+            }
+
+            // check for circular references -
+            if (references.has(value)) {
+              if (!allowCircularReferences) {
+                throw new TypeError("TypeError: circular reference found");
+              } else {
+                // if circulary references are allowed
+                // the temporary result is exactly the circ referred object
+                // it could be an 'old' object
+                // or an already copied object with or without
+                // some 'old' circ references inside it
+                res[prop] = references.get(value);
+                return;
+              }
+            }
+
+            // check discardErrorObjects flag to see how to handle Error objects
+            if (value instanceof Error) {
+              if (discardErrorObjects) {
+                return;
+              }
+              throw new TypeError("TypeError: cannot copy Error objects");
+            }
+
+            // The Boolean, Number, and String objects are converted
+            // to the corresponding primitive values
+            if (value instanceof Number || value instanceof Boolean) {
+              const newValue = descriptor.value.valueOf();
+              Object.defineProperty(res, prop, {
+                ...descriptor,
+                ...{ value: newValue }
+              });
+              return;
+            }
+
+            if (value instanceof String) {
+              const newValue = descriptor.value.toString();
+
+              Object.defineProperty(res, prop, {
+                ...descriptor,
+                ...{ value: newValue }
+              });
+              return;
+            }
+
+            // Date prop objects are cloned mantaining the same Date
+            if (value instanceof Date) {
+              const newValue = new Date(descriptor.value.getTime());
+              Object.defineProperty(res, prop, {
+                ...descriptor,
+                ...{ value: newValue }
+              });
+
+              // set the object reference to avoid sibiling duplicates
+              safeReferences.set(value, res[prop]);
+
+              return;
+            }
+
+            // RegExp cloning is automatically supported
+            if (value instanceof RegExp) {
+              const {
+                value: { lastIndex }
+              } = descriptor;
+
+              const newValue = new RegExp(
+                descriptor.value.source,
+                descriptor.value.flags
+              );
+
+              Object.defineProperty(res, prop, {
+                ...descriptor,
+                ...{ value: newValue }
+              });
+              res[prop].lastIndex = lastIndex;
+
+              // set the object reference to avoid sibiling duplicates
+              safeReferences.set(value, res[prop]);
+
+              return;
+            }
+
+            // Promises are shallow cloned
+            if (value instanceof Promise) {
+              Object.defineProperty(res, prop, descriptor);
+              return;
+            }
+
+            // WeakMaps are shallow cloned
+            if (value instanceof WeakMap) {
+              Object.defineProperty(res, prop, descriptor);
+              return;
+            }
+
+            // WeakSets are shallow cloned
+            if (value instanceof WeakSet) {
+              Object.defineProperty(res, prop, descriptor);
+              return;
+            }
+
+            // recursive deep copy for the others object props
+            // eslint-disable-next-line no-use-before-define
+            res[prop] = innerDeepClone(value, config, references, start);
+
+            // set the object reference to avoid sibiling duplicates
+            // value == reference to the current object / res[prop] == reference to the resulting copied object
+            safeReferences.set(value, res[prop]);
+          } else {
+            const propDesc = Object.getOwnPropertyDescriptor(res, prop);
+            if (!propDesc || propDesc.configurable) {
+              // shallow copy for others props only if the previously invoked constructor has not already insert
+              // a corresponding non config prop
+              Object.defineProperty(res, prop, descriptor);
+            }
+          }
+        });
+      }
     }
-    return innerPropsHandler(
-      res,
-      descriptors,
-      config,
-      safeReferences,
-      references
-    );
+    return innerPropsHandler(res, data, config, safeReferences, references);
   }
 
   function updateReferences(res, references) {
@@ -316,7 +396,39 @@ function deepClone(source, config) {
               // the reference to the old object
               res.set(key, references.get(value));
             } else {
-              // if not, res[key] it is a new copied object that might
+              // if not, 'res[key]' it is a new copied object that might
+              // have some old circ references in it
+              // vut it will be not visited if we have already
+              // updated it
+              if (alreadyVisited.has(value)) {
+                continue;
+              }
+              alreadyVisited.set(value);
+              innerUpdateReferences(value, references, alreadyVisited);
+            }
+          }
+        }
+      } else if (res instanceof Set) {
+        // get the values array
+        const entries = [...res.values()];
+
+        for (const value of entries) {
+          // only if the value is an object
+          if (value && typeof value === "object") {
+            // if the references map has a field corresponding to the current value
+            // it means that the value is an old circ reference
+            // but now the map has an up to date corresponding value (a new circ ref)
+            // so we update the prop
+            if (references.has(value)) {
+              // is essential here that the value was
+              // the reference to the old object
+
+              // remove the previous stored entries (is theonly way with set objects)
+              res.delete(value);
+              // add the new one
+              res.add(references.get(value));
+            } else {
+              // if not, 'res[value]' it is a new copied object that might
               // have some old circ references in it
               // vut it will be not visited if we have already
               // updated it
@@ -394,16 +506,22 @@ function deepClone(source, config) {
 
     if (source instanceof Map) {
       // get the entries array
-      const entries = [...source.entries()];
+      const mapEntries = [...source.entries()];
 
       // deep copy each entries from the source map to the map res
-      propsHandler(res, entries, config, references);
+      propsHandler(res, { mapEntries }, config, references);
+    } else if (source instanceof Set) {
+      // get the values array
+      const setEntries = [...source.values()];
+
+      // deep copy each entries from the source map to the map res
+      propsHandler(res, { setEntries }, config, references);
     } else {
       // get all the property descriptors from the source object (ownPropsDcps is an object)
       const ownPropsDcps = Object.getOwnPropertyDescriptors(source);
 
       // deep copy each prop from the source object to the res object
-      propsHandler(res, ownPropsDcps, config, references);
+      propsHandler(res, { ownPropsDcps }, config, references);
     }
 
     // circular references update from temp old values to new ones

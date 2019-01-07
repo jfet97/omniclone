@@ -1132,7 +1132,7 @@ describe("omniclone", () => {
       const map = new Map();
       map.set("e", new MyError());
 
-      const res = omniclone(map, { discardErrorObjects: true });
+      const res = omniclone(map);
 
       expect(res.get("e")).toBeUndefined();
     })();
@@ -1196,10 +1196,11 @@ describe("omniclone", () => {
     (() => {
       const map = new Map();
       const r = new RegExp("foo", "g");
-      map.set("r", r);
       r.lastIndex = 10;
+      map.set("r", r);
 
       const res = omniclone(map);
+      expect(res.get("r") === map.get("r")).toBe(false);
       expect(res.get("r").flags).toBe(map.get("r").flags);
       expect(res.get("r").source).toBe(map.get("r").source);
       expect(res.get("r").lastIndex).toBe(map.get("r").lastIndex);
@@ -1216,6 +1217,7 @@ describe("omniclone", () => {
         setTimeout(ok, 2000);
       }).then(() => {
         const res = omniclone(map);
+        expect(res.get("d") === map.get("d")).toBe(false);
         expect(res.get("d").getTime()).toBe(map.get("d").getTime());
         done();
       });
@@ -1251,6 +1253,320 @@ describe("omniclone", () => {
       expect(res.get("arr")[5] === map.get("arr")[5]).toBeFalsy();
       expect(res.get("arr")[5] === res.get("arr")[6]).toBeTruthy();
       expect(res.get("arr")[5] === res).toBeTruthy();
+    })();
+  });
+
+  it(`should properly duplicate a simple Set (without circular references)`, () => {
+    (() => {
+      const set = new Set();
+      set.add("prop1", "value1");
+      set.add({
+        a: {
+          a: "a"
+        },
+        b: 42
+      });
+
+      set.add(Symbol.iterator, 42); // symbols should be copied because in a Set them aren't 'hidden' keys
+
+      const res = omniclone(set);
+      expect(set === res).toBeFalsy();
+
+      const setIt = set.values();
+      const resIt = res.values();
+
+      expect(setIt.next().value === resIt.next().value).toBeTruthy(); // prop1
+
+      // the object
+      const setObj = setIt.next().value;
+      const resObj = resIt.next().value;
+      expect(setObj === resObj).toBeFalsy();
+      expect(setObj).toEqual(resObj);
+
+      expect(setIt.next().value === resIt.next().value).toBeTruthy(); // the symbol
+      expect(set.size).toBe(res.size);
+    })();
+  });
+
+  it(`should properly duplicate a Set with circular references`, () => {
+    (() => {
+      const set = new Set();
+      set.add("prop1", "value1");
+      set.add({
+        a: {
+          a: "a"
+        },
+        b: 42,
+        set
+      });
+      set.add(set);
+
+      const res = omniclone(set, {
+        allowCircularReferences: true
+      });
+      expect(set === res).toBeFalsy();
+
+      const setIt = set.values();
+      const resIt = res.values();
+
+      expect(setIt.next().value === resIt.next().value).toBeTruthy(); // prop1
+
+      // the object
+      const setObj = setIt.next().value;
+      const resObj = resIt.next().value;
+      expect(setObj === resObj).toBeFalsy();
+
+      expect(setObj.set === set).toBeTruthy();
+      expect(resObj.set === res).toBeTruthy();
+
+      // the inner reference to the Set
+      const setSet = setIt.next().value;
+      const resSet = resIt.next().value;
+
+      expect(resSet === res).toBeTruthy();
+      expect(setSet === resSet).toBeFalsy();
+
+      expect(set.size).toBe(res.size);
+    })();
+  });
+
+  it(`it should throw a TypeError when a circular reference is found into a Set object and the allowCircularReferences flag is set to false`, () => {
+    (() => {
+      const set = new Set();
+      set.add(set);
+      expect(() => {
+        omniclone(set);
+      }).toThrow(TypeError("TypeError: circular reference found"));
+    })();
+
+    (() => {
+      const set = new Set();
+      set.add(set);
+      expect(() => {
+        omniclone(set, {
+          allowCircularReferences: false
+        });
+      }).toThrow(TypeError("TypeError: circular reference found"));
+    })();
+  });
+
+  it(`should call the proper constructor for an object into a Set`, () => {
+    (() => {
+      let i = 0;
+      class Test {
+        constructor() {
+          i += 1;
+        }
+      }
+      const set = new Set();
+      set.add(new Test());
+      const res = omniclone(set);
+
+      expect(i).toBe(2);
+
+      const setTestEntry = set.values().next().value;
+      const resTestEntry = res.values().next().value;
+
+      expect(resTestEntry.constructor).toBe(Test);
+      expect(res === set).toBeFalsy();
+      expect(setTestEntry === resTestEntry).toBeFalsy();
+      expect(
+        Object.getPrototypeOf(resTestEntry) === Test.prototype
+      ).toBeTruthy();
+    })();
+  });
+
+  it("should throw a TypeError when a value in a Set object is an Error object and the discardErrorObjects flag is set to false", () => {
+    (() => {
+      class MyError extends Error {}
+      const set = new Set();
+      set.add(new MyError());
+
+      expect(() => {
+        omniclone(set, { discardErrorObjects: false });
+      }).toThrow(TypeError("TypeError: cannot copy Error objects"));
+    })();
+  });
+
+  it("should discard an Error set element object if the discardErrorObjects flag is set to true", () => {
+    (() => {
+      class MyError extends Error {}
+      const set = new Set();
+      const e = new MyError();
+      set.add(e);
+
+      const res = omniclone(set, { discardErrorObjects: true });
+      expect(res.has(e)).toBeFalsy();
+    })();
+
+    (() => {
+      class MyError extends Error {}
+      const set = new Set();
+      const e = new MyError();
+      set.has(e);
+
+      const res = omniclone(set);
+      expect(res.has(e)).toBeFalsy();
+    })();
+  });
+
+  it("should convert String set elements into primitive values ", () => {
+    (() => {
+      const set = new Set();
+      const str = new String("foo");
+      set.add(str);
+      const res = omniclone(set);
+      expect(res.has("foo")).toBe(true);
+    })();
+  });
+
+  it("should convert Number set elements into primitive values ", () => {
+    (() => {
+      const set = new Set();
+      const n = new Number(42);
+      set.add(n);
+      const res = omniclone(set);
+      expect(res.has(42)).toBe(true);
+    })();
+  });
+
+  it("should convert Boolean set elements into primitive values ", () => {
+    (() => {
+      const set = new Set();
+      const b = new Boolean(true);
+      set.add(b);
+      const res = omniclone(set);
+      expect(res.has(true)).toBe(true);
+    })();
+  });
+
+  it("should shallow copy a Promise set element ", () => {
+    const set = new Set();
+    const p = Promise.resolve();
+    set.add(p);
+    const res = omniclone(set);
+    expect(res.has(p)).toBe(true);
+  });
+
+  it("should shallow copy a WeakMap set element", () => {
+    const wm = new WeakMap();
+    const set = new Set();
+    set.add(wm);
+    const res = omniclone(set);
+    expect(res.has(wm)).toBe(true);
+  });
+
+  it("should shallow copy a WeakSet set element", () => {
+    const ws = new WeakSet();
+    const set = new Set();
+    set.add(ws);
+    const res = omniclone(set);
+    expect(res.has(ws)).toBe(true);
+  });
+
+  it("should clone a RegExp set element", () => {
+    (() => {
+      const set = new Set();
+      const r = new RegExp("foo", "g");
+      r.lastIndex = 10;
+      set.add(r);
+      const res = omniclone(set);
+
+      const resRegExp = res.values().next().value;
+
+      expect(r === resRegExp).toBe(false);
+      expect(resRegExp.flags).toBe(r.flags);
+      expect(resRegExp.source).toBe(r.source);
+      expect(resRegExp.lastIndex).toBe(r.lastIndex);
+    })();
+  });
+
+  it("should clone a Date set element", done => {
+    (() => {
+      const set = new Set();
+      const d = new Date();
+      set.add(d);
+
+      new Promise(ok => {
+        setTimeout(ok, 2000);
+      }).then(() => {
+        const res = omniclone(set);
+        const resDate = res.values().next().value;
+        expect(resDate === d).toBe(false);
+        expect(resDate.getTime() === d.getTime()).toBe(true);
+        done();
+      });
+    })();
+  });
+
+  it("should properly clone an Array into a set if the invokeConstructors flag is set", () => {
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const set = new Set();
+      set.add(arr);
+
+      const res = omniclone(set);
+      const resArr = res.values().next().value;
+
+      expect(Array.isArray(resArr)).toBeTruthy();
+      expect(res).toEqual(set);
+      expect(resArr === arr).toBeFalsy();
+      expect(resArr).toEqual(arr);
+    })();
+
+    (() => {
+      const arr = [1, 2, 3, 4, 5];
+      const set = new Set();
+      set.add(arr);
+
+      arr.push(set);
+      arr.push(set);
+
+      const res = omniclone(set, {
+        allowCircularReferences: true
+      });
+      const resArr = res.values().next().value;
+
+      expect(Array.isArray(resArr)).toBeTruthy();
+      expect(resArr === arr).toBeFalsy();
+
+      expect(resArr[5] === arr[5]).toBeFalsy();
+      expect(resArr[5] === resArr[6]).toBeTruthy();
+      expect(resArr[5] === res).toBeTruthy();
+    })();
+  });
+
+  it("should pass when there are circ references into a Set object contained into an object", () => {
+    (() => {
+      const obj = {};
+      const obj2 = { a: "a" };
+      obj.obj2 = obj2;
+      const set = new Set();
+      set.add(obj);
+      set.add(obj2);
+      obj.set = set;
+
+      const res = omniclone(obj, {
+        allowCircularReferences: true
+      });
+
+      expect(obj === res).toBe(false);
+      expect(obj.obj2 === res.obj2).toBe(false);
+      expect(obj.set === res.set).toBe(false);
+
+      const objSetIt = obj.set.values();
+      const objSetObj = objSetIt.next().value;
+      const objSetObj2 = objSetIt.next().value;
+      const resSetIt = res.set.values();
+      const resSetObj = resSetIt.next().value;
+      const resSetObj2 = resSetIt.next().value;
+
+      // them are inverted, idk why
+      expect(resSetObj2 === objSetObj).toBe(false);
+      expect(resSetObj === objSetObj2).toBe(false);
+      expect(objSetObj === obj).toBe(true);
+      expect(resSetObj === res.obj2).toBe(true);
+      expect(resSetObj2 === res).toBe(true);
     })();
   });
 });
