@@ -87,8 +87,8 @@ function deepClone(source, config) {
 
     // circular references update from temp old values to new ones
     if (allowCircularReferences) {
-      // each time an object is completed I update the references map
-      // with its references. the object could still have some old circ ref
+      // each time an object is cloned I update the references map
+      // with its new reference. The object could still have some old circ refs
       // but I'll handle this later
       references.set(source, res);
 
