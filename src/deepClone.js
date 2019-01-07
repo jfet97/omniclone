@@ -92,10 +92,10 @@ function deepClone(source, config) {
       // but I'll handle this later
       references.set(source, res);
 
-      // if I've recurively handled all 'virtual' child
-      // I've completely updated the references map
-      // Now I have to recursively update all old circ refs to the new one
       if (start === source) {
+        // if I've recursively handled all 'virtual' children
+        // I've completely updated the references map
+        // Now I have to recursively update all old circ refs to the new ones
         updateReferences(res, references);
       }
     }
