@@ -2,8 +2,7 @@ const errorObjectsHandler = require("./errorsObjectsHandler");
 const regexpObjectsHandler = require("./regexpObjectsHanlder");
 const dateObjectsHandler = require("./dateObjectsHandler");
 const primitiveObjectsHandler = require("./primitiveObjectsHandler");
-const circReferencesHelper = require("./../utility/circReferencesHelper");
-const safeReferencesHelper = require("./../utility/safeReferencesHelper");
+const prevReferencesHelper = require("./../utility/prevReferencesHelper");
 
 module.exports = (
   res,
@@ -16,40 +15,15 @@ module.exports = (
 ) => {
   const mapEntries = data;
 
-  const { allowCircularReferences, discardErrorObjects } = config;
+  const { discardErrorObjects } = config;
 
   for (const [key, value] of mapEntries) {
     if (value && typeof value === "object") {
-      // check for duplicated sibiling object references
-      const safeReference = safeReferencesHelper(safeReferences, value);
-      if (safeReference) {
-        res.set(key, safeReference);
+      // check if I've already found this object
+      const prevRef = prevReferencesHelper(references, value);
+      if (prevRef) {
+        res.set(key, prevRef);
         continue;
-      }
-
-      // check for circular references
-      const circRef = circReferencesHelper(
-        references,
-        value,
-        allowCircularReferences
-      );
-      if (circRef) {
-        res.set(key, circRef);
-        continue;
-      }
-
-      if (references.has(value)) {
-        if (!allowCircularReferences) {
-          throw new TypeError("TypeError: circular reference found");
-        } else {
-          // if circulary references are allowed
-          // the temporary result is exactly the circ referred object
-          // it could be an 'old' object (map included)
-          // or an already copied object with or without
-          // some 'old' circ references inside it
-          res.set(key, references.get(value));
-          continue;
-        }
       }
 
       // check discardErrorObjects flag to see how to handle Error objects

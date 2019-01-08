@@ -2,7 +2,7 @@ const errorObjectsHandler = require("./errorsObjectsHandler");
 const regexpObjectsHandler = require("./regexpObjectsHanlder");
 const dateObjectsHandler = require("./dateObjectsHandler");
 const primitiveObjectsHandler = require("./primitiveObjectsHandler");
-const circReferencesHelper = require("./../utility/circReferencesHelper");
+const prevReferencesHelper = require("./../utility/prevReferencesHelper");
 
 module.exports = (
   res,
@@ -14,20 +14,16 @@ module.exports = (
 ) => {
   const setEntries = data;
 
-  const { allowCircularReferences, discardErrorObjects } = config;
+  const { discardErrorObjects } = config;
 
   // for set key == value
 
   for (const value of setEntries) {
     if (value && typeof value === "object") {
-      // check for circular references
-      const circRef = circReferencesHelper(
-        references,
-        value,
-        allowCircularReferences
-      );
-      if (circRef) {
-        res.add(circRef);
+      // check if I've already found this object
+      const prevRef = prevReferencesHelper(references, value);
+      if (prevRef) {
+        res.add(prevRef);
         continue;
       }
 
