@@ -2,8 +2,7 @@ const errorObjectsHandler = require("./errorsObjectsHandler");
 const regexpObjectsHandler = require("./regexpObjectsHanlder");
 const dateObjectsHandler = require("./dateObjectsHandler");
 const primitiveObjectsHandler = require("./primitiveObjectsHandler");
-const circReferencesHelper = require("./../utility/circReferencesHelper");
-const safeReferencesHelper = require("./../utility/safeReferencesHelper");
+const prevReferencesHelper = require("./../utility/prevReferencesHelper");
 
 module.exports = (
   res,
@@ -20,7 +19,6 @@ module.exports = (
     copyNonEnumerables,
     copySymbols,
     copyGettersSetters,
-    allowCircularReferences,
     discardErrorObjects
   } = config;
 
@@ -44,21 +42,10 @@ module.exports = (
     if (!copyGettersSetters && (descriptor.get || descriptor.set)) return;
 
     if (value && typeof value === "object") {
-      // check for duplicated sibiling object references
-      const safeReference = safeReferencesHelper(safeReferences, value);
-      if (safeReference) {
-        res[prop] = safeReference;
-        return;
-      }
-
-      // check for circular references -
-      const circRef = circReferencesHelper(
-        references,
-        value,
-        allowCircularReferences
-      );
-      if (circRef) {
-        res[prop] = circRef;
+      // check if I've already found this object
+      const prevRef = prevReferencesHelper(references, value);
+      if (prevRef) {
+        res[prop] = prevRef;
         return;
       }
 

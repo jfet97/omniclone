@@ -13,7 +13,7 @@ function omniclone(
     copyNonEnumerables = false,
     copySymbols = false,
     copyGettersSetters = false,
-    allowCircularReferences = false,
+    allowCircularReferences = true,
     discardErrorObjects = true
   } = {}
 ) {
@@ -85,7 +85,8 @@ function omniclone(
     // so we have to force the allowCircularReferences if there are not
     const depsMap = createDependenciesMap(obj, copyNonEnumerables, copySymbols);
     // eslint-disable-next-line no-param-reassign
-    allowCircularReferences = checkCircRef(depsMap);
+    if (checkCircRef(depsMap))
+      throw new TypeError("TypeError: circular reference found");
   }
 
   const config = {

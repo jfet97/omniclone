@@ -14,7 +14,7 @@ describe("omniclone", () => {
 
   it(`should set setPrototype to false, invokeConstructors to true, discardErrorObjects to true,
       copyNonEnumerables to false, copySymbols to false, copyGettersSetters to false and
-      allowCircularReferences to false if the config argument is undefined`, () => {
+      allowCircularReferences to true if the config argument is undefined`, () => {
     (() => {
       let i = 0;
       class Test {
@@ -48,7 +48,7 @@ describe("omniclone", () => {
       const ob1 = {};
       ob1.ob1 = ob1;
       omniclone(ob1);
-    }).toThrow(TypeError("TypeError: circular reference found"));
+    }).not.toThrow(TypeError("TypeError: circular reference found"));
 
     (() => {
       class MyError extends Error {}
@@ -544,16 +544,7 @@ describe("omniclone", () => {
       const ob1 = {};
       ob1.ob1 = ob1;
       expect(() => {
-        omniclone(ob1);
-      }).toThrow(TypeError("TypeError: circular reference found"));
-    })();
-
-    (() => {
-      const ob1 = {};
-      const ob2 = { ob1 };
-      ob1.ob2 = ob2;
-      expect(() => {
-        omniclone(ob1);
+        omniclone(ob1, { allowCircularReferences: false });
       }).toThrow(TypeError("TypeError: circular reference found"));
     })();
   });
@@ -572,7 +563,7 @@ describe("omniclone", () => {
       const ob2 = { ob1 };
       ob1.ob2 = ob2;
       expect(() => {
-        omniclone(ob1, { allowCircularReferences: true });
+        omniclone(ob1);
       }).toBeDefined();
     })();
 
@@ -1037,7 +1028,9 @@ describe("omniclone", () => {
       const map = new Map();
       map.set(map, map);
       expect(() => {
-        omniclone(map);
+        omniclone(map, {
+          allowCircularReferences: false
+        });
       }).toThrow(TypeError("TypeError: circular reference found"));
     })();
 
@@ -1335,7 +1328,9 @@ describe("omniclone", () => {
       const set = new Set();
       set.add(set);
       expect(() => {
-        omniclone(set);
+        omniclone(set, {
+          allowCircularReferences: false
+        });
       }).toThrow(TypeError("TypeError: circular reference found"));
     })();
 

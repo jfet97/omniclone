@@ -30,7 +30,7 @@ import omniclone from 'omniclone';
 3. let you to clone objects with circular references (customizable behavior)
 4. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
 5. correct handling of String, Boolean, Number, Error, Promise, Map, Set, WeakMap and WeakSet objects
-6. safe similar sibilings references are not duplicated
+6. similar references are not duplicated
 7. correct cloning of Array objects
 8. correct cloning of RegExp and Date objects
 
@@ -151,9 +151,10 @@ const res = omniclone(source, {
 ```
 Odds are that to properly copy gets&setts you have also to enable the `copyNonEnumerables` flag.
 
-### allowCircularReferences (default false)
+### allowCircularReferences (default true)
 Enable it to allow circular references.\
 Disable it to throw an error if one is met.
+Know that `omniclone` is more performing with this flag __enabled__, so disable it only if you really need.
 ```js
 const res = omniclone(source, {
   allowCircularReferences: true
@@ -179,7 +180,7 @@ omniclone(source, {
     copyNonEnumerables : false,
     copySymbols : false,
     copyGettersSetters : false,
-    allowCircularReferences: false,
+    allowCircularReferences: true,
     discardErrorObjects: true,
 });
 ```

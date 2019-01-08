@@ -2,10 +2,10 @@ const updateReferences = require("./updateReferences");
 const propsHandler = require("./propsHandler");
 
 function deepClone(source, config) {
-  // circular references guard
+  // already visited references map
   // each analized object will store its reference here
-  // so we can check each of its object properties to see if there are
-  // reference to already analized objects
+  // so we can check each of its chilren object to see if there are
+  // references to already analized objects
   const references = new WeakMap();
 
   // A reference to the initial source object
@@ -102,13 +102,15 @@ function deepClone(source, config) {
       );
     }
 
-    // circular references update from temp old values to new ones
-    if (allowCircularReferences) {
-      // each time an object is cloned I update the references map
-      // with its new reference. The object could still have some old circ refs
-      // but I'll handle this later
-      references.set(source, res);
+    // each time an object is cloned I update the references map
+    // with its new reference. The object could still have some old circ refs
+    // but I'll handle this later
+    references.set(source, res);
 
+    // circular references update from temp old values to new ones
+    // we don't it if allowCircularReferences is false because the previous check
+    // in omniclone.js would have trown an error
+    if (allowCircularReferences) {
       if (start === source) {
         // if I've recursively handled all 'virtual' children
         // I've completely updated the references map

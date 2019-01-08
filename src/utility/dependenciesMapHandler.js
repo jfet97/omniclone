@@ -43,7 +43,7 @@ function dependenciesMapHandler(map) {
 }
 
 function checkCircRefs(map) {
-  return !dependenciesMapHandler(map).size;
+  return dependenciesMapHandler(map).size;
 }
 
 module.exports = checkCircRefs;
