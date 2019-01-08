@@ -28,7 +28,7 @@ describe("omniclone", () => {
         enumerable: false,
         value: 42
       });
-      testObj.symbol = Symbol("symbol");
+      testObj[Symbol("symbol")] = "value";
       Object.defineProperty(testObj, "g&s", {
         get: () => 42,
         set: () => {}
@@ -40,7 +40,7 @@ describe("omniclone", () => {
       expect(res.constructor).toBe(Test);
       expect(Object.getPrototypeOf(res)).toBe(Test.prototype);
       expect(res.notEnum).toBeUndefined();
-      expect(res.symbol).toBeUndefined();
+      expect(res[Symbol("symbol")]).toBeUndefined();
       expect(res["g&s"]).toBeUndefined();
     })();
 
@@ -478,25 +478,25 @@ describe("omniclone", () => {
   it("should not copy symbols if the copySymbols flag is set to false", () => {
     (() => {
       const obj = {};
-      obj.s = Symbol("s");
+      obj[Symbol("s")] = "s";
       const res = omniclone(obj);
-      expect(res.s).toBeUndefined();
+      expect(res[Symbol("s")]).toBeUndefined();
     })();
 
     (() => {
       const obj = {};
-      obj.s = Symbol("s");
+      obj[Symbol("s")] = "s";
       const res = omniclone(obj, { copySymbols: false });
-      expect(res.s).toBeUndefined();
+      expect(res[Symbol("s")]).toBeUndefined();
     })();
   });
 
   it("should shallow copy symbols if the copySymbols flag is set to true", () => {
     (() => {
       const obj = {};
-      obj.s = Symbol("s");
+      obj[Symbol("s")] = "s";
       const res = omniclone(obj, { copySymbols: true });
-      expect(res.s).toBe(obj.s);
+      expect(res[Symbol("s")]).toBe(obj[Symbol("s")]);
     })();
   });
 
@@ -1567,6 +1567,54 @@ describe("omniclone", () => {
       expect(objSetObj === obj).toBe(true);
       expect(resSetObj === res.obj2).toBe(true);
       expect(resSetObj2 === res).toBe(true);
+    })();
+  });
+
+  it("should not throw a TypeError because there are not circ references", () => {
+    (() => {
+      const ob0 = {};
+      const ob1 = {};
+      const ob2 = {};
+      const ob3 = {};
+
+      ob0.ob1 = ob1;
+      ob0.ob2 = ob2;
+
+      ob1.ob3 = ob3;
+      ob2.ob3 = ob3;
+      expect(() => {
+        omniclone(ob0);
+      }).not.toThrow(TypeError("TypeError: circular reference found"));
+    })();
+
+    (() => {
+      const ob0 = {};
+      const ob1 = {};
+      const ob2 = {};
+      ob0.ob1 = ob1;
+      ob0.ob2 = ob2;
+
+      ob1.ob2 = ob2;
+      expect(() => {
+        omniclone(ob0);
+      }).not.toThrow(TypeError("TypeError: circular reference found"));
+    })();
+
+    (() => {
+      const ob0 = {};
+      const ob1 = {};
+      const ob2 = {};
+      const ob3 = {};
+
+      ob0.ob1 = ob1;
+      ob0.ob2 = ob2;
+
+      ob2.ob3 = ob3;
+      ob3.ob1 = ob1;
+
+      expect(() => {
+        omniclone(ob0);
+      }).not.toThrow(TypeError("TypeError: circular reference found"));
     })();
   });
 });

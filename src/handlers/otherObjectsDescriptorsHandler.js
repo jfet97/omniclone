@@ -35,7 +35,7 @@ module.exports = (
     // the copySymbols setted to true indicates that
     // we can copy symbol props
     // if we mustn't copy symbols and the current prop is a symbol we return
-    if (!copySymbols && typeof value === "symbol") return;
+    if (!copySymbols && typeof prop === "symbol") return;
 
     // copyGettersSetters setted to true indicates that
     // we can copy getters and setters

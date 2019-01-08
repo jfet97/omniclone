@@ -2,6 +2,8 @@ const deepClone = require("./deepClone");
 const errorObjectsHandler = require("./handlers/errorsObjectsHandler");
 const regexpObjectsHandler = require("./handlers/regexpObjectsHanlder");
 const dateObjectsHandler = require("./handlers/dateObjectsHandler");
+const createDependenciesMap = require("./utility/createDependenciesMap");
+const checkCircRef = require("./utility/dependenciesMapHandler");
 
 function omniclone(
   obj = {},
@@ -76,6 +78,14 @@ function omniclone(
 
   if (typeof discardErrorObjects !== "boolean") {
     throw new TypeError("TypeError: invalid 'discardErrorObjects' flag's type");
+  }
+
+  if (!allowCircularReferences) {
+    // the internal algorithm is too semplicistic, it search only back references
+    // so we have to force the allowCircularReferences if there are not
+    const depsMap = createDependenciesMap(obj, copyNonEnumerables, copySymbols);
+    // eslint-disable-next-line no-param-reassign
+    allowCircularReferences = checkCircRef(depsMap);
   }
 
   const config = {

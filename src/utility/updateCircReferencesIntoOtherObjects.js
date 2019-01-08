@@ -4,8 +4,25 @@ module.exports = (
   alreadyVisitedMap,
   recursiveInnerPropsUpdate
 ) => {
-  Object.entries(res).forEach(([key, value]) => {
-    // only if the value is an object
+  // we have to update alle the references in the res object (non-enum and symbol prop included)
+  // if non-enum and symbol prop had to be discarded won't be present at all in the res object, so no checks to do
+
+  // we discard non object, function and setters&getters
+
+  const descriptors = Object.getOwnPropertyDescriptors(res);
+
+  Object.entries(descriptors).forEach(([key, descriptor]) => {
+    // descriptor.value == value of each prop == potential reference to a node
+
+    if (descriptor.set || descriptor.get) {
+      // don't care about getters and setters
+      // them are functions that will be copied by reference
+      return;
+    }
+
+    const { value } = descriptor;
+
+    // discard functions and non object
     if (value && typeof value === "object") {
       // if the references map has a field corresponding to the current value
       // it means that the value is an old circ reference
