@@ -225,3 +225,6 @@ When you will use `JSON.parse()`, an `{"foo":"bar"}` object will be created for 
 2. `super` is statically bound to a class heirarchy, remember it
 3. `Error` objects cannot be properly copied because of js limitations
 4. currently there is no isomorphic way to detect if an object is a `Proxy` nor is possible to access the handler object. Because of transparent virtualization, `omniclone` will copy each properties, the `constructor` and the `[[Prototype]]` directly from the proxed object.
+
+## support
+Let me know that you like this project: star it! Thanks :)
