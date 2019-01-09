@@ -1,5 +1,5 @@
 # omniclone  [![NPM version](https://img.shields.io/npm/v/omniclone.svg)](https://www.npmjs.com/package/omniclone) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/jfet97/omniclone/blob/master/LICENSE) ![](https://img.shields.io/npm/dt/omniclone.svg)
-An isomorphic and configurable javascript function for object deep cloning
+An isomorphic and configurable javascript function for object deep cloning.
 ```js
 omniclone(source, config);
 ```
