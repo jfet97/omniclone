@@ -2,7 +2,9 @@ const errorObjectsHandler = require("./errorsObjectsHandler");
 const regexpObjectsHandler = require("./regexpObjectsHanlder");
 const dateObjectsHandler = require("./dateObjectsHandler");
 const primitiveObjectsHandler = require("./primitiveObjectsHandler");
+const typedArraysObjectsHandler = require("./typedArraysObjectsHandler");
 const prevReferencesHelper = require("./../utility/prevReferencesHelper");
+const arrayBufferObjectsHandler = require("./arrayBufferObjectsHandler");
 
 module.exports = (
   res,
@@ -48,6 +50,10 @@ module.exports = (
       if (value instanceof Date) {
         const newDate = dateObjectsHandler(value);
         res.add(newDate);
+
+        // set the object reference to speedup in case of duplicates somewhere else
+        references.set(value, newDate);
+
         continue;
       }
 
@@ -55,6 +61,10 @@ module.exports = (
       if (value instanceof RegExp) {
         const clonedRegexp = regexpObjectsHandler(value);
         res.add(clonedRegexp);
+
+        // set the object reference to speedup in case of duplicates somewhere else
+        references.set(value, clonedRegexp);
+
         continue;
       }
 
@@ -73,6 +83,39 @@ module.exports = (
       // WeakSets are cloned by reference
       if (value instanceof WeakSet) {
         res.add(value);
+        continue;
+      }
+
+      // deep copy of ArrayBuffer objects
+      if (value instanceof ArrayBuffer) {
+        const clonedArrayBuffer = arrayBufferObjectsHandler(value);
+
+        res.add(clonedArrayBuffer);
+
+        // set the object reference to speedup in case of duplicates somewhere else
+        references.set(value, clonedArrayBuffer);
+
+        continue;
+      }
+
+      // deep copy of TypedArray objects
+      if (
+        value instanceof Int8Array ||
+        value instanceof Uint8Array ||
+        value instanceof Uint8ClampedArray ||
+        value instanceof Int16Array ||
+        value instanceof Uint16Array ||
+        value instanceof Int32Array ||
+        value instanceof Uint32Array ||
+        value instanceof Float32Array ||
+        value instanceof Float64Array
+      ) {
+        const clonedTypedArray = typedArraysObjectsHandler(value);
+
+        res.add(clonedTypedArray);
+
+        // set the object reference to speedup in case of duplicates
+        references.set(value, clonedTypedArray);
         continue;
       }
 

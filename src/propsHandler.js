@@ -10,21 +10,7 @@ module.exports = function propsHandler(
   references,
   deepClone
 ) {
-  // sibiling safe references
-  // if an object contains another object more than one times
-  // storing its reference in more than one prop
-  // we have to restore this state
-  const safeReferences = new WeakMap();
-  // obviously if the reference implies circular reference an error is thrown
-  // if circular references are not supported
-
-  return (function innerPropsHandler(
-    res,
-    data,
-    config,
-    safeReferences,
-    references
-  ) {
+  return (function innerPropsHandler(res, data, config, references) {
     const { mapEntries, setEntries, ownPropsDcps: descriptors } = data;
 
     if (mapEntries) {
@@ -34,7 +20,6 @@ module.exports = function propsHandler(
         mapEntries,
         config,
         start,
-        safeReferences,
         references,
         // eslint-disable-next-line no-use-before-define
         deepClone
@@ -60,7 +45,6 @@ module.exports = function propsHandler(
         descriptors,
         config,
         start,
-        safeReferences,
         references,
         // eslint-disable-next-line no-use-before-define
         deepClone
@@ -68,5 +52,5 @@ module.exports = function propsHandler(
     }
 
     throw new Error("wrong data parameter for innerPropsHandler function");
-  })(res, data, config, safeReferences, references);
+  })(res, data, config, references);
 };

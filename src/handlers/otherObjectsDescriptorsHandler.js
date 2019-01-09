@@ -1,6 +1,8 @@
 const errorObjectsHandler = require("./errorsObjectsHandler");
 const regexpObjectsHandler = require("./regexpObjectsHanlder");
 const dateObjectsHandler = require("./dateObjectsHandler");
+const arrayBufferObjectsHandler = require("./arrayBufferObjectsHandler");
+const typedArraysObjectsHandler = require("./typedArraysObjectsHandler");
 const primitiveObjectsHandler = require("./primitiveObjectsHandler");
 const prevReferencesHelper = require("./../utility/prevReferencesHelper");
 
@@ -9,7 +11,6 @@ module.exports = (
   data,
   config,
   start,
-  safeReferences,
   references,
   recursiveDeepCloning
 ) => {
@@ -79,8 +80,8 @@ module.exports = (
           ...{ value: newDate }
         });
 
-        // set the object reference to avoid sibiling duplicates
-        safeReferences.set(value, newDate);
+        // set the object reference to speedup in case of duplicates
+        references.set(value, newDate);
 
         return;
       }
@@ -94,8 +95,8 @@ module.exports = (
           ...{ value: clonedRegexp }
         });
 
-        // set the object reference to avoid sibiling duplicates
-        safeReferences.set(value, clonedRegexp);
+        // set the object reference to speedup in case of duplicates
+        references.set(value, clonedRegexp);
 
         return;
       }
@@ -103,6 +104,45 @@ module.exports = (
       // Promises are cloned by reference
       if (value instanceof Promise) {
         Object.defineProperty(res, prop, descriptor);
+        return;
+      }
+
+      // deep copy of ArrayBuffer objects
+      if (value instanceof ArrayBuffer) {
+        const clonedArrayBuffer = arrayBufferObjectsHandler(value);
+
+        Object.defineProperty(res, prop, {
+          ...descriptor,
+          ...{ value: clonedArrayBuffer }
+        });
+
+        // set the object reference to speedup in case of duplicates
+        references.set(value, clonedArrayBuffer);
+
+        return;
+      }
+
+      // deep copy of TypedArray objects
+      if (
+        value instanceof Int8Array ||
+        value instanceof Uint8Array ||
+        value instanceof Uint8ClampedArray ||
+        value instanceof Int16Array ||
+        value instanceof Uint16Array ||
+        value instanceof Int32Array ||
+        value instanceof Uint32Array ||
+        value instanceof Float32Array ||
+        value instanceof Float64Array
+      ) {
+        const clonedTypedArray = typedArraysObjectsHandler(value);
+
+        Object.defineProperty(res, prop, {
+          ...descriptor,
+          ...{ value: clonedTypedArray }
+        });
+
+        // set the object reference to speedup in case of duplicates
+        references.set(value, clonedTypedArray);
         return;
       }
 
@@ -121,10 +161,6 @@ module.exports = (
       // recursive deep copy for the others object props
       // eslint-disable-next-line no-use-before-define
       res[prop] = recursiveDeepCloning(value, config, references, start);
-
-      // set the object reference to avoid sibiling duplicates
-      // value == reference to the current object / res[prop] == reference to the resulting copied object
-      safeReferences.set(value, res[prop]);
     } else {
       const propDesc = Object.getOwnPropertyDescriptor(res, prop);
       if (!propDesc || propDesc.configurable) {
