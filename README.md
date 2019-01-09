@@ -24,6 +24,9 @@ const omniclone = require('omniclone');
 import omniclone from 'omniclone';
 ```
 
+## test
+[Test it](https://npm.runkit.com/omniclone) in no time with RunKit!
+
 ## strengths
 1. automatically invoke object constructors before copying properties (customizable behavior)
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
