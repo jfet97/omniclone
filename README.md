@@ -32,7 +32,7 @@ import omniclone from 'omniclone';
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
 3. let you to clone objects with circular references (customizable behavior)
 4. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
-5. correct handling of String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer and TypedArray objects
+5. correct handling of String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer, TypedArray and DataView objects
 6. similar references are not duplicated
 7. correct cloning of Array objects
 8. correct cloning of RegExp and Date objects
@@ -188,7 +188,7 @@ omniclone(source, {
 });
 ```
 
-## what about String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer and TypedArray objects?
+## what about String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer, TypedArray and DataView objects?
 
 String, Boolean and Number objects passed to `omniclone` as sources will produce `null`.\
 Error objects passed to `omniclone` as sources will produce `null` if the `discardErrorObjects` is set to `true` (as default).\
@@ -204,6 +204,7 @@ Promise, WeakMap and WeakSet objects props will be copied by reference.
 Map objects (keys/values) will be always deeply cloned, but any properties added to the map object itself will not be copied.\
 Set objects will be always deeply cloned, but any properties added to the set object itself will not be copied.\
 ArrayBuffer and TypedArray objects will be always deeply cloned, but any properties added to the array objects themselves will not be copied.
+DataView objects are copied by reference.
 
 ## what about the 6th strength?
 

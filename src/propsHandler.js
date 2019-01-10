@@ -11,7 +11,6 @@ module.exports = function propsHandler(
   deepClone,
   customHandler
 ) {
-
   return (function innerPropsHandler(res, data, config, references) {
     const { mapEntries, setEntries, ownPropsDcps: descriptors } = data;
 

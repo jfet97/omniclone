@@ -18,7 +18,7 @@ function omniclone(
     allowCircularReferences = true,
     discardErrorObjects = true
   } = {},
-  customHandler = () => { }
+  customHandler = () => {}
 ) {
   if (!obj || typeof obj !== "object") {
     throw new TypeError("TypeError: invalid 'obj' argument's type");
@@ -98,7 +98,6 @@ function omniclone(
     return dateObjectsHandler(obj);
   }
 
-
   if (!allowCircularReferences) {
     // the internal algorithm is too semplicistic, it search only back references
     // so we have to force the allowCircularReferences if there are not
@@ -108,15 +107,20 @@ function omniclone(
       throw new TypeError("TypeError: circular reference found");
   }
 
+  if (obj instanceof Map || obj instanceof Set)
+    return deepClone(obj, config, customHandler);
 
-  if ((obj instanceof Map) || (obj instanceof Set)) return deepClone(obj, config, customHandler);
-
-  // the custom Handler has more priority than ArrayBuffer and TypedArray objects but less tham Maps and Sets
+  // the custom Handler has more priority than ArrayBuffer and TypedArray and DataView objects but less tham Maps and Sets
 
   // custom Handler
   const customHandlerReturnValue = customHandler(obj, { ...config });
   if (customHandlerReturnValue !== undefined) {
     return customHandlerReturnValue;
+  }
+
+  // copy by reference for DataView objects
+  if (obj instanceof DataView) {
+    return obj;
   }
 
   // deep copy of ArrayBuffer objects
@@ -141,7 +145,6 @@ function omniclone(
 
   // deep clone the obj props
   return deepClone(obj, config, customHandler);
-
 }
 
 module.exports = omniclone;

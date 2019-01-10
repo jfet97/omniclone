@@ -107,7 +107,6 @@ module.exports = (
         return;
       }
 
-
       // WeakMaps are cloned by reference
       if (value instanceof WeakMap) {
         Object.defineProperty(res, prop, descriptor);
@@ -120,17 +119,12 @@ module.exports = (
         return;
       }
 
-      if ((res instanceof Map) || (res instanceof Set)) {
-        res[prop] = recursiveDeepCloning(
-          value,
-          config,
-          references,
-          start
-        );
+      if (value instanceof Map || value instanceof Set) {
+        res[prop] = recursiveDeepCloning(value, config, references, start);
         return;
       }
 
-      // the custom Handler has more priority than ArrayBuffer and TypedArray objects but less tham Maps and Sets
+      // the custom Handler has more priority than ArrayBuffer and TypedArray and DataView objects but less tham Maps and Sets
 
       // custom Handler
       const customHandlerReturnValue = customHandler(value, { ...config });
@@ -138,6 +132,12 @@ module.exports = (
         res[prop] = customHandlerReturnValue;
         // set the object reference to speedup in case of duplicates somewhere else
         references.set(value, customHandlerReturnValue);
+        return;
+      }
+
+      // copy by reference for DataView objects
+      if (value instanceof DataView) {
+        Object.defineProperty(res, prop, descriptor);
         return;
       }
 
@@ -181,13 +181,7 @@ module.exports = (
       }
 
       // recursive deep copy for the others object props
-      res[prop] = recursiveDeepCloning(
-        value,
-        config,
-        references,
-        start
-      );
-
+      res[prop] = recursiveDeepCloning(value, config, references, start);
     } else {
       const propDesc = Object.getOwnPropertyDescriptor(res, prop);
       if (!propDesc || propDesc.configurable) {

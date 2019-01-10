@@ -64,6 +64,38 @@ describe("omniclone", () => {
       })();
     });
 
+  it("should throw a TypeError when omniclone is called with an invalid 'customHandler' argument's type", () => {
+    expect(() => {
+      omniclone({}, {}, null);
+    }).toThrow(
+      TypeError("TypeError: invalid 'customHandler' arguments's type")
+    );
+
+    expect(() => {
+      omniclone({}, {}, {});
+    }).toThrow(
+      TypeError("TypeError: invalid 'customHandler' arguments's type")
+    );
+
+    expect(() => {
+      omniclone({}, {}, "foo");
+    }).toThrow(
+      TypeError("TypeError: invalid 'customHandler' arguments's type")
+    );
+
+    expect(() => {
+      omniclone({}, {}, 42);
+    }).toThrow(
+      TypeError("TypeError: invalid 'customHandler' arguments's type")
+    );
+
+    expect(() => {
+      omniclone({}, {}, Symbol("test"));
+    }).toThrow(
+      TypeError("TypeError: invalid 'customHandler' arguments's type")
+    );
+  });
+
   it("should throw a TypeError when omniclone is called with an invalid 'obj' argument's type", () => {
     expect(() => {
       omniclone(null);
@@ -1578,7 +1610,7 @@ describe("omniclone", () => {
       ob1.ob3 = ob3;
       ob2.ob3 = ob3;
       expect(() => {
-        omniclone(ob0);
+        omniclone(ob0, { allowCircularReferences: false });
       }).not.toThrow(TypeError("TypeError: circular reference found"));
     })();
 
@@ -1591,7 +1623,7 @@ describe("omniclone", () => {
 
       ob1.ob2 = ob2;
       expect(() => {
-        omniclone(ob0);
+        omniclone(ob0, { allowCircularReferences: false });
       }).not.toThrow(TypeError("TypeError: circular reference found"));
     })();
 
@@ -1608,28 +1640,150 @@ describe("omniclone", () => {
       ob3.ob1 = ob1;
 
       expect(() => {
-        omniclone(ob0);
+        omniclone(ob0, { allowCircularReferences: false });
       }).not.toThrow(TypeError("TypeError: circular reference found"));
     })();
-
-
   });
 
   it("should properly clone a Node Buffer when we pass an appropriate customHandler callback", () => {
     (() => {
       const buffer = Buffer.from([1, 2, 3, 4]);
 
-      const resBuffer = omniclone(buffer, {}, function (node, config) {
+      const resBuffer = omniclone(buffer, {}, node => {
         if (node instanceof Buffer) {
           return Buffer.from(node);
         }
+        return undefined;
       });
 
-      const comp = Buffer.compare(buffer, resBuffer)
+      const comp = Buffer.compare(buffer, resBuffer);
 
       expect(comp).toBe(0);
       expect(resBuffer.constructor).toBe(Buffer);
     })();
+  });
 
+  it("should properly clone the custom type object", () => {
+    (() => {
+      class Test {
+        constructor(a, b) {
+          this.a = a;
+          this.b = b;
+        }
+
+        setC(val) {
+          this.c = val;
+        }
+      }
+
+      const test = new Test();
+      test.setC(10);
+
+      const res = omniclone(test, {}, node => {
+        if (node instanceof Test) {
+          const result = new Test(node.a, node.b);
+          return result;
+        }
+        return undefined;
+      });
+      expect(res instanceof Test).toBe(true);
+      expect(res.a === test.a).toBe(true);
+      expect(res.b === test.b).toBe(true);
+      expect(res.c).toBeUndefined();
+    })();
+
+    (() => {
+      class Test {
+        constructor(a, b) {
+          this.a = a;
+          this.b = b;
+        }
+
+        setC(val) {
+          this.c = val;
+        }
+      }
+
+      const test = new Test();
+      test.setC(10);
+      const source = { test };
+
+      const res = omniclone(source, {}, node => {
+        if (node instanceof Test) {
+          const result = new Test(node.a, node.b);
+          return result;
+        }
+        return undefined;
+      });
+      expect(res.test instanceof Test).toBe(true);
+      expect(res.test.a === test.a).toBe(true);
+      expect(res.test.b === test.b).toBe(true);
+      expect(res.test.c).toBeUndefined();
+    })();
+
+    (() => {
+      class Test {
+        constructor(a, b) {
+          this.a = a;
+          this.b = b;
+        }
+
+        setC(val) {
+          this.c = val;
+        }
+      }
+
+      const test = new Test();
+      test.setC(10);
+
+      const map = new Map();
+      map.set("t", test);
+
+      const res = omniclone(map, {}, node => {
+        if (node instanceof Test) {
+          const result = new Test(node.a, node.b);
+          return result;
+        }
+        return undefined;
+      });
+      expect(res.get("t") instanceof Test).toBe(true);
+      expect(res.get("t").a === test.a).toBe(true);
+      expect(res.get("t").b === test.b).toBe(true);
+      expect(res.get("t").c).toBeUndefined();
+    })();
+
+    (() => {
+      class Test {
+        constructor(a, b) {
+          this.a = a;
+          this.b = b;
+        }
+
+        setC(val) {
+          this.c = val;
+        }
+      }
+
+      const test = new Test();
+      test.setC(10);
+
+      const set = new Set();
+      set.add(test);
+
+      const resSet = omniclone(set, {}, node => {
+        if (node instanceof Test) {
+          const result = new Test(node.a, node.b);
+          return result;
+        }
+        return undefined;
+      });
+
+      const res = resSet.values().next().value;
+
+      expect(res.get("t") instanceof Test).toBe(true);
+      expect(res.get("t").a === test.a).toBe(true);
+      expect(res.get("t").b === test.b).toBe(true);
+      expect(res.get("t").c).toBeUndefined();
+    })();
   });
 });

@@ -84,17 +84,12 @@ module.exports = (
         continue;
       }
 
-      if ((res instanceof Map) || (res instanceof Set)) {
-        res.set(key, recursiveDeepCloning(
-          value,
-          config,
-          references,
-          start
-        ));
+      if (value instanceof Map || value instanceof Set) {
+        res.set(key, recursiveDeepCloning(value, config, references, start));
         continue;
       }
 
-      // the custom Handler has more priority than ArrayBuffer and TypedArray objects but less tham Maps and Sets
+      // the custom Handler has more priority than ArrayBuffer and TypedArray and DataView objects but less tham Maps and Sets
 
       // custom Handler
       const customHandlerReturnValue = customHandler(value, { ...config });
@@ -105,6 +100,11 @@ module.exports = (
         continue;
       }
 
+      // copy by reference for DataView objects
+      if (value instanceof DataView) {
+        res.set(key, value);
+        continue;
+      }
 
       // deep copy of ArrayBuffer objects
       if (value instanceof ArrayBuffer) {
@@ -140,13 +140,7 @@ module.exports = (
       }
 
       // recursive deep copy for the others object props
-      res.set(key, recursiveDeepCloning(
-        value,
-        config,
-        references,
-        start
-      ));
-
+      res.set(key, recursiveDeepCloning(value, config, references, start));
     } else {
       // not an object (numeric values, functions, symbols)
       res.set(key, value);

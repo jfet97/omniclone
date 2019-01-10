@@ -113,13 +113,11 @@ function deepClone(source, config, customHandler) {
     // circular references update from temp old values to new ones
     // we don't it if allowCircularReferences is false because the previous check
     // in omniclone.js would have trown an error
-    if (allowCircularReferences) {
-      if (start === source) {
-        // if I've recursively handled all 'virtual' children
-        // I've completely updated the references map
-        // Now I have to recursively update all old circ refs to the new ones
-        updateReferences(res, references);
-      }
+    if (allowCircularReferences && start === source) {
+      // if I've recursively handled all 'virtual' children
+      // I've completely updated the references map
+      // Now I have to recursively update all old circ refs to the new ones
+      updateReferences(res, references);
     }
 
     // return the result
