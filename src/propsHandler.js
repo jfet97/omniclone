@@ -8,8 +8,10 @@ module.exports = function propsHandler(
   config,
   start,
   references,
-  deepClone
+  deepClone,
+  customHandler
 ) {
+
   return (function innerPropsHandler(res, data, config, references) {
     const { mapEntries, setEntries, ownPropsDcps: descriptors } = data;
 
@@ -22,7 +24,8 @@ module.exports = function propsHandler(
         start,
         references,
         // eslint-disable-next-line no-use-before-define
-        deepClone
+        deepClone,
+        customHandler
       );
     }
 
@@ -35,7 +38,8 @@ module.exports = function propsHandler(
         start,
         references,
         // eslint-disable-next-line no-use-before-define
-        deepClone
+        deepClone,
+        customHandler
       );
     }
 
@@ -47,7 +51,8 @@ module.exports = function propsHandler(
         start,
         references,
         // eslint-disable-next-line no-use-before-define
-        deepClone
+        deepClone,
+        customHandler
       );
     }
 

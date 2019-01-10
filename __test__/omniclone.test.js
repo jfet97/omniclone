@@ -15,54 +15,54 @@ describe("omniclone", () => {
   it(`should set setPrototype to false, invokeConstructors to true, discardErrorObjects to true,
       copyNonEnumerables to false, copySymbols to false, copyGettersSetters to false and
       allowCircularReferences to true if the config argument is undefined`, () => {
-    (() => {
-      let i = 0;
-      class Test {
-        constructor() {
-          i += 1;
+      (() => {
+        let i = 0;
+        class Test {
+          constructor() {
+            i += 1;
+          }
         }
-      }
-      const testObj = new Test();
+        const testObj = new Test();
 
-      Object.defineProperty(testObj, "notEnum", {
-        enumerable: false,
-        value: 42
-      });
-      testObj[Symbol("symbol")] = "value";
-      Object.defineProperty(testObj, "g&s", {
-        get: () => 42,
-        set: () => {}
-      });
+        Object.defineProperty(testObj, "notEnum", {
+          enumerable: false,
+          value: 42
+        });
+        testObj[Symbol("symbol")] = "value";
+        Object.defineProperty(testObj, "g&s", {
+          get: () => 42,
+          set: () => { }
+        });
 
-      const res = omniclone(testObj);
+        const res = omniclone(testObj);
 
-      expect(i).toBe(2); // +1 because of the call to create testObj
-      expect(res.constructor).toBe(Test);
-      expect(Object.getPrototypeOf(res)).toBe(Test.prototype);
-      expect(res.notEnum).toBeUndefined();
-      expect(res[Symbol("symbol")]).toBeUndefined();
-      expect(res["g&s"]).toBeUndefined();
-    })();
+        expect(i).toBe(2); // +1 because of the call to create testObj
+        expect(res.constructor).toBe(Test);
+        expect(Object.getPrototypeOf(res)).toBe(Test.prototype);
+        expect(res.notEnum).toBeUndefined();
+        expect(res[Symbol("symbol")]).toBeUndefined();
+        expect(res["g&s"]).toBeUndefined();
+      })();
 
-    expect(() => {
-      const ob1 = {};
-      ob1.ob1 = ob1;
-      omniclone(ob1);
-    }).not.toThrow(TypeError("TypeError: circular reference found"));
+      expect(() => {
+        const ob1 = {};
+        ob1.ob1 = ob1;
+        omniclone(ob1);
+      }).not.toThrow(TypeError("TypeError: circular reference found"));
 
-    (() => {
-      class MyError extends Error {}
-      const res = omniclone(new MyError());
-      expect(res).toBeNull();
-    })();
+      (() => {
+        class MyError extends Error { }
+        const res = omniclone(new MyError());
+        expect(res).toBeNull();
+      })();
 
-    (() => {
-      class MyError extends Error {}
-      const ob1 = { e: new MyError() };
-      const res = omniclone(ob1);
-      expect(res.e).toBeUndefined();
-    })();
-  });
+      (() => {
+        class MyError extends Error { }
+        const ob1 = { e: new MyError() };
+        const res = omniclone(ob1);
+        expect(res.e).toBeUndefined();
+      })();
+    });
 
   it("should throw a TypeError when omniclone is called with an invalid 'obj' argument's type", () => {
     expect(() => {
@@ -70,7 +70,7 @@ describe("omniclone", () => {
     }).toThrow(TypeError("TypeError: invalid 'obj' argument's type"));
 
     expect(() => {
-      omniclone(() => {});
+      omniclone(() => { });
     }).toThrow(TypeError("TypeError: invalid 'obj' argument's type"));
 
     expect(() => {
@@ -92,14 +92,14 @@ describe("omniclone", () => {
     }).toThrow(TypeError("TypeError: cannot copy Error objects"));
 
     expect(() => {
-      class CustomError extends Error {}
+      class CustomError extends Error { }
       omniclone(new CustomError(), { discardErrorObjects: false });
     }).toThrow(TypeError("TypeError: cannot copy Error objects"));
   });
 
   it("should throw a TypeError when the discardErrorObjects flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { discardErrorObjects: () => {} });
+      omniclone({}, { discardErrorObjects: () => { } });
     }).toThrow(
       TypeError("TypeError: invalid 'discardErrorObjects' flag's type")
     );
@@ -137,7 +137,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when the setPrototype flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { setPrototype: () => {} });
+      omniclone({}, { setPrototype: () => { } });
     }).toThrow(TypeError("TypeError: invalid 'setPrototype' flag's type"));
 
     expect(() => {
@@ -163,7 +163,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when the invokeConstructors flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { invokeConstructors: () => {} });
+      omniclone({}, { invokeConstructors: () => { } });
     }).toThrow(
       TypeError("TypeError: invalid 'invokeConstructors' flag's type")
     );
@@ -201,7 +201,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when the copyNonEnumerables flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { copyNonEnumerables: () => {} });
+      omniclone({}, { copyNonEnumerables: () => { } });
     }).toThrow(
       TypeError("TypeError: invalid 'copyNonEnumerables' flag's type")
     );
@@ -239,7 +239,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when the copySymbols flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { copySymbols: () => {} });
+      omniclone({}, { copySymbols: () => { } });
     }).toThrow(TypeError("TypeError: invalid 'copySymbols' flag's type"));
 
     expect(() => {
@@ -265,7 +265,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when the copyGettersSetters flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { copyGettersSetters: () => {} });
+      omniclone({}, { copyGettersSetters: () => { } });
     }).toThrow(
       TypeError("TypeError: invalid 'copyGettersSetters' flag's type")
     );
@@ -303,7 +303,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when the allowCircularReferences flag setted into the config object passed to omniclone has not Boolean type", () => {
     expect(() => {
-      omniclone({}, { allowCircularReferences: () => {} });
+      omniclone({}, { allowCircularReferences: () => { } });
     }).toThrow(
       TypeError("TypeError: invalid 'allowCircularReferences' flag's type")
     );
@@ -505,7 +505,7 @@ describe("omniclone", () => {
       const testObj = {};
       Object.defineProperty(testObj, "g&s", {
         get: () => 42,
-        set: () => {}
+        set: () => { }
       });
       // copyNonEnumerables: true because in this case set&get are not enumerable
       const res = omniclone(testObj, { copyNonEnumerables: true });
@@ -516,7 +516,7 @@ describe("omniclone", () => {
       const testObj = {};
       Object.defineProperty(testObj, "g&s", {
         get: () => 42,
-        set: () => {}
+        set: () => { }
       });
       const res = omniclone(testObj, { copyGettersSetters: false });
       expect(res["g&s"]).toBeUndefined();
@@ -528,7 +528,7 @@ describe("omniclone", () => {
       const testObj = {};
       Object.defineProperty(testObj, "g&s", {
         get: () => 42,
-        set: () => {}
+        set: () => { }
       });
       // copyNonEnumerables: true because in this case set&get are also not enumerable
       const res = omniclone(testObj, {
@@ -586,7 +586,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when a prop is an Error object and the discardErrorObjects flag is set to false", () => {
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const ob1 = { p: new MyError() };
       expect(() => {
         omniclone(ob1, { discardErrorObjects: false });
@@ -596,7 +596,7 @@ describe("omniclone", () => {
 
   it("should discard an Error object prop if the discardErrorObjects flag is set to true", () => {
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const ob1 = { p: new MyError() };
 
       const res = omniclone(ob1, { discardErrorObjects: true });
@@ -604,7 +604,7 @@ describe("omniclone", () => {
     })();
 
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const ob1 = { p: new MyError() };
 
       const res = omniclone(ob1);
@@ -810,7 +810,7 @@ describe("omniclone", () => {
       });
       Object.defineProperty(testObj, "g&s", {
         get: () => 42,
-        set: () => {}
+        set: () => { }
       });
       testObj.symbol = Symbol("symbol");
 
@@ -846,7 +846,7 @@ describe("omniclone", () => {
       });
       Object.defineProperty(testObj, "g&s", {
         get: () => 42,
-        set: () => {}
+        set: () => { }
       });
       testObj.symbol = Symbol("symbol");
       testObj.innerObj = {
@@ -1083,7 +1083,7 @@ describe("omniclone", () => {
 
   it(`should call the proper constructor for an object into a Map`, () => {
     (() => {
-      class Test {}
+      class Test { }
       const map = new Map();
       map.set("a", new Test());
 
@@ -1100,7 +1100,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when a value in a Map object is an Error object and the discardErrorObjects flag is set to false", () => {
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const map = new Map();
       map.set("p", new MyError());
 
@@ -1112,7 +1112,7 @@ describe("omniclone", () => {
 
   it("should discard an Error map element object if the discardErrorObjects flag is set to true", () => {
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const map = new Map();
       map.set("e", new MyError());
 
@@ -1121,7 +1121,7 @@ describe("omniclone", () => {
     })();
 
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const map = new Map();
       map.set("e", new MyError());
 
@@ -1373,7 +1373,7 @@ describe("omniclone", () => {
 
   it("should throw a TypeError when a value in a Set object is an Error object and the discardErrorObjects flag is set to false", () => {
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const set = new Set();
       set.add(new MyError());
 
@@ -1385,7 +1385,7 @@ describe("omniclone", () => {
 
   it("should discard an Error set element object if the discardErrorObjects flag is set to true", () => {
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const set = new Set();
       const e = new MyError();
       set.add(e);
@@ -1395,7 +1395,7 @@ describe("omniclone", () => {
     })();
 
     (() => {
-      class MyError extends Error {}
+      class MyError extends Error { }
       const set = new Set();
       const e = new MyError();
       set.has(e);
@@ -1611,5 +1611,25 @@ describe("omniclone", () => {
         omniclone(ob0);
       }).not.toThrow(TypeError("TypeError: circular reference found"));
     })();
+
+
+  });
+
+  it("should properly clone a Node Buffer when we pass an appropriate customHandler callback", () => {
+    (() => {
+      const buffer = Buffer.from([1, 2, 3, 4]);
+
+      const resBuffer = omniclone(buffer, {}, function (node, config) {
+        if (node instanceof Buffer) {
+          return Buffer.from(node);
+        }
+      });
+
+      const comp = Buffer.compare(buffer, resBuffer)
+
+      expect(comp).toBe(0);
+      expect(resBuffer.constructor).toBe(Buffer);
+    })();
+
   });
 });

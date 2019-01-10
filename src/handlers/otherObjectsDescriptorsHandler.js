@@ -12,10 +12,10 @@ module.exports = (
   config,
   start,
   references,
-  recursiveDeepCloning
+  recursiveDeepCloning,
+  customHandler
 ) => {
   const descriptors = data;
-
   const {
     copyNonEnumerables,
     copySymbols,
@@ -107,6 +107,40 @@ module.exports = (
         return;
       }
 
+
+      // WeakMaps are cloned by reference
+      if (value instanceof WeakMap) {
+        Object.defineProperty(res, prop, descriptor);
+        return;
+      }
+
+      // WeakSets are cloned by reference
+      if (value instanceof WeakSet) {
+        Object.defineProperty(res, prop, descriptor);
+        return;
+      }
+
+      if ((res instanceof Map) || (res instanceof Set)) {
+        res[prop] = recursiveDeepCloning(
+          value,
+          config,
+          references,
+          start
+        );
+        return;
+      }
+
+      // the custom Handler has more priority than ArrayBuffer and TypedArray objects but less tham Maps and Sets
+
+      // custom Handler
+      const customHandlerReturnValue = customHandler(value, { ...config });
+      if (customHandlerReturnValue !== undefined) {
+        res[prop] = customHandlerReturnValue;
+        // set the object reference to speedup in case of duplicates somewhere else
+        references.set(value, customHandlerReturnValue);
+        return;
+      }
+
       // deep copy of ArrayBuffer objects
       if (value instanceof ArrayBuffer) {
         const clonedArrayBuffer = arrayBufferObjectsHandler(value);
@@ -146,21 +180,14 @@ module.exports = (
         return;
       }
 
-      // WeakMaps are cloned by reference
-      if (value instanceof WeakMap) {
-        Object.defineProperty(res, prop, descriptor);
-        return;
-      }
-
-      // WeakSets are cloned by reference
-      if (value instanceof WeakSet) {
-        Object.defineProperty(res, prop, descriptor);
-        return;
-      }
-
       // recursive deep copy for the others object props
-      // eslint-disable-next-line no-use-before-define
-      res[prop] = recursiveDeepCloning(value, config, references, start);
+      res[prop] = recursiveDeepCloning(
+        value,
+        config,
+        references,
+        start
+      );
+
     } else {
       const propDesc = Object.getOwnPropertyDescriptor(res, prop);
       if (!propDesc || propDesc.configurable) {

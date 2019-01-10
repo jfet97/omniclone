@@ -17,7 +17,8 @@ function omniclone(
     copyGettersSetters = false,
     allowCircularReferences = true,
     discardErrorObjects = true
-  } = {}
+  } = {},
+  customHandler = () => { }
 ) {
   if (!obj || typeof obj !== "object") {
     throw new TypeError("TypeError: invalid 'obj' argument's type");
@@ -53,6 +54,21 @@ function omniclone(
     throw new TypeError("TypeError: invalid 'discardErrorObjects' flag's type");
   }
 
+  // eslint-disable-next-line valid-typeof
+  if (typeof customHandler !== "function") {
+    throw new TypeError("TypeError: invalid 'customHandler' arguments's type");
+  }
+
+  const config = {
+    setPrototype,
+    invokeConstructors,
+    copyNonEnumerables,
+    copySymbols,
+    copyGettersSetters,
+    allowCircularReferences,
+    discardErrorObjects
+  };
+
   if (
     obj instanceof Number ||
     obj instanceof String ||
@@ -82,6 +98,27 @@ function omniclone(
     return dateObjectsHandler(obj);
   }
 
+
+  if (!allowCircularReferences) {
+    // the internal algorithm is too semplicistic, it search only back references
+    // so we have to force the allowCircularReferences if there are not
+    const depsMap = createDependenciesMap(obj, copyNonEnumerables, copySymbols);
+    // eslint-disable-next-line no-param-reassign
+    if (checkCircRef(depsMap))
+      throw new TypeError("TypeError: circular reference found");
+  }
+
+
+  if ((obj instanceof Map) || (obj instanceof Set)) return deepClone(obj, config, customHandler);
+
+  // the custom Handler has more priority than ArrayBuffer and TypedArray objects but less tham Maps and Sets
+
+  // custom Handler
+  const customHandlerReturnValue = customHandler(obj, { ...config });
+  if (customHandlerReturnValue !== undefined) {
+    return customHandlerReturnValue;
+  }
+
   // deep copy of ArrayBuffer objects
   if (obj instanceof ArrayBuffer) {
     return arrayBufferObjectsHandler(obj);
@@ -102,26 +139,9 @@ function omniclone(
     return typedArraysObjectsHandler(obj);
   }
 
-  if (!allowCircularReferences) {
-    // the internal algorithm is too semplicistic, it search only back references
-    // so we have to force the allowCircularReferences if there are not
-    const depsMap = createDependenciesMap(obj, copyNonEnumerables, copySymbols);
-    // eslint-disable-next-line no-param-reassign
-    if (checkCircRef(depsMap))
-      throw new TypeError("TypeError: circular reference found");
-  }
+  // deep clone the obj props
+  return deepClone(obj, config, customHandler);
 
-  const config = {
-    setPrototype,
-    invokeConstructors,
-    copyNonEnumerables,
-    copySymbols,
-    copyGettersSetters,
-    allowCircularReferences,
-    discardErrorObjects
-  };
-
-  return deepClone(obj, config);
 }
 
 module.exports = omniclone;

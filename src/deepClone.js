@@ -1,7 +1,7 @@
 const updateReferences = require("./updateReferences");
 const propsHandler = require("./propsHandler");
 
-function deepClone(source, config) {
+function deepClone(source, config, customHandler) {
   // already visited references map
   // each analized object will store its reference here
   // so we can check each of its chilren object to see if there are
@@ -67,7 +67,8 @@ function deepClone(source, config) {
         config,
         start,
         references,
-        innerDeepClone
+        innerDeepClone,
+        customHandler
       );
     } else if (source instanceof Set) {
       // special case: Set
@@ -85,7 +86,8 @@ function deepClone(source, config) {
         config,
         start,
         references,
-        innerDeepClone
+        innerDeepClone,
+        customHandler
       );
     } else {
       // get all the property descriptors from the source object (ownPropsDcps is an object)
@@ -98,7 +100,8 @@ function deepClone(source, config) {
         config,
         start,
         references,
-        innerDeepClone
+        innerDeepClone,
+        customHandler
       );
     }
 
