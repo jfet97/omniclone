@@ -12,7 +12,8 @@ module.exports = (
   config,
   start,
   references,
-  recursiveDeepCloning
+  recursiveDeepCloning,
+  customHandler
 ) => {
   const setEntries = data;
 
@@ -86,6 +87,28 @@ module.exports = (
         continue;
       }
 
+      if (value instanceof Map || value instanceof Set) {
+        res.add(recursiveDeepCloning(value, config, references, start));
+        continue;
+      }
+
+      // the custom Handler has more priority than ArrayBuffer and TypedArray and DataView objects but less tham Maps and Sets
+
+      // custom Handler
+      const customHandlerReturnValue = customHandler(value, { ...config });
+      if (customHandlerReturnValue !== undefined) {
+        res.add(customHandlerReturnValue);
+        // set the object reference to speedup in case of duplicates somewhere else
+        references.set(value, customHandlerReturnValue);
+        continue;
+      }
+
+      // copy by reference for DataView objects
+      if (value instanceof DataView) {
+        res.add(value);
+        continue;
+      }
+
       // deep copy of ArrayBuffer objects
       if (value instanceof ArrayBuffer) {
         const clonedArrayBuffer = arrayBufferObjectsHandler(value);
@@ -94,7 +117,6 @@ module.exports = (
 
         // set the object reference to speedup in case of duplicates somewhere else
         references.set(value, clonedArrayBuffer);
-
         continue;
       }
 
@@ -120,14 +142,7 @@ module.exports = (
       }
 
       // recursive deep copy for the others object props
-      // eslint-disable-next-line no-use-before-define
-      const deepClonedValue = recursiveDeepCloning(
-        value,
-        config,
-        references,
-        start
-      );
-      res.add(deepClonedValue);
+      res.add(recursiveDeepCloning(value, config, references, start));
     } else {
       // not an object (numeric values, functions, symbols)
       res.add(value);

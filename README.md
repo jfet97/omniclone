@@ -1,7 +1,7 @@
 # omniclone  [![NPM version](https://img.shields.io/npm/v/omniclone.svg)](https://www.npmjs.com/package/omniclone) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/jfet97/omniclone/blob/master/LICENSE) ![](https://img.shields.io/npm/dt/omniclone.svg)
 An isomorphic and configurable javascript function for object deep cloning.
 ```js
-omniclone(source, config);
+omniclone(source [, config, [, visitor]]);
 ```
 
 Example:
@@ -32,10 +32,11 @@ import omniclone from 'omniclone';
 2. let you to share the `[[Prototype]]` object between source and the resulting object (customizable behavior)
 3. let you to clone objects with circular references (customizable behavior)
 4. let you to copy getters and setters, non enumerables properties and also symbols (customizable behavior)
-5. correct handling of String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer and TypedArray objects
+5. correct handling of String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer, TypedArray and DataView objects
 6. similar references are not duplicated
 7. correct cloning of Array objects
 8. correct cloning of RegExp and Date objects
+9. let you define custom cloning logic
 
 ## config
 
@@ -188,7 +189,7 @@ omniclone(source, {
 });
 ```
 
-## what about String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer and TypedArray objects?
+## what about String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer, TypedArray and DataView objects?
 
 String, Boolean and Number objects passed to `omniclone` as sources will produce `null`.\
 Error objects passed to `omniclone` as sources will produce `null` if the `discardErrorObjects` is set to `true` (as default).\
@@ -204,6 +205,7 @@ Promise, WeakMap and WeakSet objects props will be copied by reference.
 Map objects (keys/values) will be always deeply cloned, but any properties added to the map object itself will not be copied.\
 Set objects will be always deeply cloned, but any properties added to the set object itself will not be copied.\
 ArrayBuffer and TypedArray objects will be always deeply cloned, but any properties added to the array objects themselves will not be copied.
+DataView objects are copied by reference.
 
 ## what about the 6th strength?
 
@@ -218,6 +220,31 @@ const source = {
 JSON.stringify(source); // '{"a":{"foo":"bar"},"b":{"foo":"bar"}}'
 ```
 When you will use `JSON.parse()`, an `{"foo":"bar"}` object will be created for the `a` prop and a `{"foo":"bar"}` distinct object will be created for the `b` prop. But this is not the initial situation where `source.a == source.b; // true`.
+
+## how to define custom cloning logic?
+You can define a callback function that will be called on each node which copy can be customized:
+```js
+function visitor(node, config) {
+  // do stuff
+}
+```
+The function will receive the `node` and a copy of the `config` object. If the function returns something different than `undefined`, that returned value will become the cloned value. On the contrary if the function returns `undefined` the default cloning algorithm will be used.
+
+You cannot overwrite the default algorithm logic for String, Boolean, Number, Error, Promise, Map, Set, WeakMap, WeakSet, Date and RegExp objects.
+You can overwrite the default algorithm logic for Array, ArrayBuffer, TypedArray, DataView, plain js and custom objects.
+
+Let's see an example where we add custom logic to properly clone a Node.js Buffer object:
+```js
+const buffer = Buffer.from([1, 2, 3, 4]);
+
+const resBuffer = omniclone(buffer, {}, node => {
+  if (node instanceof Buffer) { // it affects only Buffer objects
+    return Buffer.from(node);
+  }
+  return undefined; // all the other node will be cloned as usual
+});
+```
+Thanks to the `instanceof` check, only Buffer objects will be affected by the intervention of the visitor callback.
 
 
 ## warnings and limitations

@@ -1,1 +1,1 @@
-module.export = typedArray => typedArray.slice();
+module.exports = typedArray => typedArray.slice();

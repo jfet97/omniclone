@@ -95,7 +95,7 @@ module.exports = (
 
           // if the object value has not already been visited, we analize it
           if (!alreadyVisited.has(value)) {
-            createDependenciesMap(value);
+            createDependenciesMap(value, copyNonEnumerables, copySymbols);
           }
         }
       });
@@ -112,7 +112,7 @@ module.exports = (
 
           // if the object value has not already been visited,, we analize it
           if (!alreadyVisited.has(value)) {
-            createDependenciesMap(value);
+            createDependenciesMap(value, copyNonEnumerables, copySymbols);
           }
         }
       });

@@ -1,7 +1,7 @@
 const updateReferences = require("./updateReferences");
 const propsHandler = require("./propsHandler");
 
-function deepClone(source, config) {
+function deepClone(source, config, customHandler) {
   // already visited references map
   // each analized object will store its reference here
   // so we can check each of its chilren object to see if there are
@@ -67,7 +67,8 @@ function deepClone(source, config) {
         config,
         start,
         references,
-        innerDeepClone
+        innerDeepClone,
+        customHandler
       );
     } else if (source instanceof Set) {
       // special case: Set
@@ -85,7 +86,8 @@ function deepClone(source, config) {
         config,
         start,
         references,
-        innerDeepClone
+        innerDeepClone,
+        customHandler
       );
     } else {
       // get all the property descriptors from the source object (ownPropsDcps is an object)
@@ -98,7 +100,8 @@ function deepClone(source, config) {
         config,
         start,
         references,
-        innerDeepClone
+        innerDeepClone,
+        customHandler
       );
     }
 
@@ -110,13 +113,11 @@ function deepClone(source, config) {
     // circular references update from temp old values to new ones
     // we don't it if allowCircularReferences is false because the previous check
     // in omniclone.js would have trown an error
-    if (allowCircularReferences) {
-      if (start === source) {
-        // if I've recursively handled all 'virtual' children
-        // I've completely updated the references map
-        // Now I have to recursively update all old circ refs to the new ones
-        updateReferences(res, references);
-      }
+    if (allowCircularReferences && start === source) {
+      // if I've recursively handled all 'virtual' children
+      // I've completely updated the references map
+      // Now I have to recursively update all old circ refs to the new ones
+      updateReferences(res, references);
     }
 
     // return the result

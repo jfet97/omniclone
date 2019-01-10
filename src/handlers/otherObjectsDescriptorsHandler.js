@@ -12,10 +12,10 @@ module.exports = (
   config,
   start,
   references,
-  recursiveDeepCloning
+  recursiveDeepCloning,
+  customHandler
 ) => {
   const descriptors = data;
-
   const {
     copyNonEnumerables,
     copySymbols,
@@ -107,6 +107,40 @@ module.exports = (
         return;
       }
 
+      // WeakMaps are cloned by reference
+      if (value instanceof WeakMap) {
+        Object.defineProperty(res, prop, descriptor);
+        return;
+      }
+
+      // WeakSets are cloned by reference
+      if (value instanceof WeakSet) {
+        Object.defineProperty(res, prop, descriptor);
+        return;
+      }
+
+      if (value instanceof Map || value instanceof Set) {
+        res[prop] = recursiveDeepCloning(value, config, references, start);
+        return;
+      }
+
+      // the custom Handler has more priority than ArrayBuffer and TypedArray and DataView objects but less tham Maps and Sets
+
+      // custom Handler
+      const customHandlerReturnValue = customHandler(value, { ...config });
+      if (customHandlerReturnValue !== undefined) {
+        res[prop] = customHandlerReturnValue;
+        // set the object reference to speedup in case of duplicates somewhere else
+        references.set(value, customHandlerReturnValue);
+        return;
+      }
+
+      // copy by reference for DataView objects
+      if (value instanceof DataView) {
+        Object.defineProperty(res, prop, descriptor);
+        return;
+      }
+
       // deep copy of ArrayBuffer objects
       if (value instanceof ArrayBuffer) {
         const clonedArrayBuffer = arrayBufferObjectsHandler(value);
@@ -146,20 +180,7 @@ module.exports = (
         return;
       }
 
-      // WeakMaps are cloned by reference
-      if (value instanceof WeakMap) {
-        Object.defineProperty(res, prop, descriptor);
-        return;
-      }
-
-      // WeakSets are cloned by reference
-      if (value instanceof WeakSet) {
-        Object.defineProperty(res, prop, descriptor);
-        return;
-      }
-
       // recursive deep copy for the others object props
-      // eslint-disable-next-line no-use-before-define
       res[prop] = recursiveDeepCloning(value, config, references, start);
     } else {
       const propDesc = Object.getOwnPropertyDescriptor(res, prop);
