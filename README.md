@@ -241,7 +241,7 @@ const resBuffer = omniclone(buffer, {}, node => {
   if (node instanceof Buffer) { // it affects only Buffer objects
     return Buffer.from(node);
   }
-  return undefined; // all the other node will be cloned as usual
+  return undefined; // all the other nodes will be cloned as usual
 });
 ```
 Thanks to the `instanceof` check, only Buffer objects will be affected by the intervention of the visitor callback.
