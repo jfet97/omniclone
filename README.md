@@ -1,4 +1,5 @@
-# omniclone  [![NPM version](https://img.shields.io/npm/v/omniclone.svg)](https://www.npmjs.com/package/omniclone) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/jfet97/omniclone/blob/master/LICENSE) ![](https://img.shields.io/npm/dt/omniclone.svg) ![](https://img.shields.io/badge/dependencies-no%20dependencies-%231e88e5%20.svg)
+[![NPM version](https://img.shields.io/npm/v/omniclone.svg)](https://www.npmjs.com/package/omniclone) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/jfet97/omniclone/blob/master/LICENSE) ![](https://img.shields.io/npm/dt/omniclone.svg) ![](https://img.shields.io/badge/dependencies-no%20dependencies-%231e88e5%20.svg)
+# omniclone  
 An isomorphic and configurable javascript function for object deep cloning.
 ```js
 omniclone(source [, config, [, visitor]]);
